@@ -1,45 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { decodeAddress } from '@polkadot/util-crypto';
-import Identicon from '@polkadot/react-identicon';
-import {ReefInjected, InjectedAccount, ReefSignerResponse, ReefSignerStatus, ReefVM} from "@reef-defi/extension-inject/types";
-import { Provider, Signer } from '@reef-defi/evm-provider';
+
+import { InjectedAccount, ReefSignerResponse, ReefVM } from "@reef-defi/extension-inject/types";
+import { Signer } from '@reef-defi/evm-provider';
 import { ethers } from 'ethers';
 import { Buffer } from 'buffer';
-import { ReefSigner, getReefExtension, signerToReefSigner } from './util';
-
-const MIN_BALANCE = ethers.parseEther('5');
-const hasBalanceForBinding = (balance: bigint): boolean => balance > MIN_BALANCE;
-
-const Account = ({ account }: { account: ReefSigner }): JSX.Element => (
-  <div>
-    <div>
-      <Identicon value={account.address} size={44} theme="substrate" />
-    </div>
-    <div>
-      <div>{ account.name }</div>
-      <div>{ toAddressShortDisplay(account.address) }</div>
-    </div>
-  </div>
-);
+import { ReefAccount, getReefExtension, getSignersWithEnoughBalance, hasBalanceForBinding, accountToReefAccount, MIN_BALANCE, toAddressShortDisplay, captureError } from './util';
+import { OpenModalButton } from './Modal';
+import Account from './Account';
+import { AccountListModal } from './AccountListModal';
+import { web3FromAddress } from '@reef-defi/extension-dapp';
 
 interface BindStatus {
   inProgress: boolean;
   message?: string;
 }
 
-const trim = (value: string, size = 19): string =>
-  value.length < size
-    ? value
-    : `${value.slice(0, size - 5)}...${value.slice(value.length - 5)}`;
-
-const toAddressShortDisplay = (address: string): string =>
-  trim(address, 7);
-
 const App = (): JSX.Element => {
-  const [accounts, setAccounts] = useState<InjectedAccount[]>([]);
-  const [selectedAccount, setSelectedAccount] = useState<InjectedAccount>();
-  const [selectedSigner, setSelectedSigner] = useState<ReefSigner>();
-  const [provider, setProvider] = useState<Provider>();
+  const [accounts, setAccounts] = useState<ReefAccount[]>([]);
+  const [accountsWithEnoughBalance, setAccountsWithEnoughBalance] = useState<ReefAccount[]>([]);
+  const [selectedSigner, setSelectedSigner] = useState<Signer>();
+  const [selectedReefSigner, setSelectedReefSigner] = useState<ReefAccount>();
+  const [transferBalanceFrom, setTransferBalanceFrom] = useState<ReefAccount | undefined>();
   const [bindStatus, setBindStatus] = useState<BindStatus>({ inProgress: false });
 
   useEffect(() => {
@@ -47,14 +29,29 @@ const App = (): JSX.Element => {
   }, []);
 
   useEffect(() => {
-    if (selectedAccount && provider) {
-      signerToReefSigner(selectedAccount, provider).then((rs: ReefSigner) => {
-        setSelectedSigner(rs);
-      });
+    if (selectedSigner) {
+      const account = accounts.find(
+        (account: ReefAccount) => account.address === selectedSigner._substrateAddress
+      );
+      if (account) {
+        account.signer = selectedSigner;
+        setSelectedReefSigner(account);
+        return;
+      }
+    } 
+    setSelectedReefSigner(undefined);
+  }, [selectedSigner, accounts]);
+
+  useEffect(() => {
+    if (selectedReefSigner) {
+      const fromAccounts = getSignersWithEnoughBalance(accounts, selectedReefSigner);
+      setAccountsWithEnoughBalance(fromAccounts);
+      setTransferBalanceFrom(fromAccounts[0]);
     } else {
-      setSelectedSigner(undefined);
+      setAccountsWithEnoughBalance([]);
+      setTransferBalanceFrom(undefined);
     }
-  }, [selectedAccount, provider]);
+  }, [accounts, selectedReefSigner]);
 
   const getAccounts = async (): Promise<any> => {
     try {
@@ -68,31 +65,51 @@ const App = (): JSX.Element => {
         throw new Error('Install Reef Chain Wallet extension for Chrome or Firefox. See docs.reef.io');
       }
 
-      reefExtension.reefProvider.subscribeSelectedNetworkProvider(async (provider: Provider) => {
-        console.log("provider cb =", provider);
-        setProvider(provider);
-      });
+      const provider = await reefExtension.reefProvider.getNetworkProvider();
+      const accounts = await reefExtension.accounts.get();
+        const _reefAccounts = await Promise.all(accounts.map(async (account: InjectedAccount) => 
+        accountToReefAccount(account, provider)
+      ));
+      setAccounts(_reefAccounts);
 
       reefExtension.accounts.subscribe(async (accounts: InjectedAccount[]) => {
-        console.log("accounts cb =",accounts);
-        setAccounts(accounts);
-        const selectedAccount = accounts.find((account: InjectedAccount) => account.isSelected);
-        setSelectedAccount(selectedAccount);
+        console.log("accounts cb =", accounts);
+        const _accounts = await Promise.all(accounts.map(async (account: InjectedAccount) => 
+          accountToReefAccount(account, provider)
+        ));
+        setAccounts(_accounts);
       });
 
-      // reefExtension.reefSigner.subscribeSelectedSigner(async (sig:ReefSignerResponse) => {
-      //   console.log("signer cb =",sig);
-      // }, ReefVM.NATIVE);
+      reefExtension.reefSigner.subscribeSelectedSigner(async (sig:ReefSignerResponse) => {
+        console.log("signer cb =", sig);
+        setSelectedSigner(sig.data);
+      }, ReefVM.NATIVE);
 
     } catch (err: any) {
       console.error(err);
     }
   }
 
-  const bindEvmAddress = async (address: string, provider: Provider): Promise<void> => {
+  const transfer = (from: ReefAccount, to: ReefAccount) => async (): Promise<void> => {
+    const fromInjector = await web3FromAddress(from.address);
+    const api = to.signer!.provider.api;
+    await api.isReadyOrError;
+
+    api.tx.balances
+      .transfer(to.address, ethers.parseEther(MIN_BALANCE))
+      .signAndSend(from.address, { signer: fromInjector.signer }, (status) => { 
+        console.log("status =", status)
+        const err = captureError(status.events);
+        if (err) {
+          console.log("err =", err)
+        } 
+      })
+  }
+
+  const bindEvmAddress = async (reefAccount: ReefAccount): Promise<void> => {
     setBindStatus({ inProgress: true, message: 'Sign message with an EVM wallet (e.g. Metamask, Trust, Phantom...).' });
 
-    const publicKey = decodeAddress(address);
+    const publicKey = decodeAddress(reefAccount.address);
     const message = 'reef evm:' + Buffer.from(publicKey).toString('hex');
 
     const { evmAddress, signature, error } = await signMessage(message);
@@ -107,7 +124,8 @@ const App = (): JSX.Element => {
     setBindStatus({ inProgress: true, message: `Send transaction with Reef extension to bind with ${evmAddress}.` });
     
     try {
-      await provider.api.tx.evmAccounts.claimAccount(evmAddress, signature).signAndSend(address);
+      await reefAccount.signer!.provider.api.tx.evmAccounts.claimAccount(evmAddress, signature)
+        .signAndSend(reefAccount.address);
       setBindStatus({ inProgress: true, message: `Binding to address ${evmAddress}.` });
     } catch (err) {
       console.error(err);
@@ -146,16 +164,16 @@ const App = (): JSX.Element => {
       <h1>Reef EVM</h1>
 
       <div>
-        { provider && selectedSigner ? (
+        { selectedReefSigner ? (
           <div>
-            <Account account={selectedSigner} />
-            { selectedSigner.isEvmClaimed ? (
+            <Account account={selectedReefSigner} />
+            { selectedReefSigner.isEvmClaimed ? (
               <div>
               {/* Claimed */}
                 <p>
                   {' '}
                   Successfully connected to Ethereum VM address&nbsp;
-                  <b>{toAddressShortDisplay(selectedSigner.evmAddress)}</b>
+                  <b>{toAddressShortDisplay(selectedReefSigner.evmAddress)}</b>
                   .
                   <br />
                 </p>
@@ -170,13 +188,47 @@ const App = (): JSX.Element => {
                     <p>{ bindStatus.message }</p>
                   </div>
                 ) : (
-                  <div>
+                  <>
                   {/* Bind not in progress */}
-                    <button onClick={() => bindEvmAddress(selectedSigner.address, provider)}>Bind</button>
-                    { bindStatus.message && 
-                      <p>{ bindStatus.message }</p> 
+                  { hasBalanceForBinding(selectedReefSigner.balance) ? (
+                    <div>
+                    {/* Bind */}
+                      <button onClick={() => bindEvmAddress(selectedReefSigner)}>Bind</button>
+                      { bindStatus.message && 
+                        <p>{ bindStatus.message }</p> 
+                      }
+                    </div>
+                  ) : (
+                    <>
+                    {/* Not enough balance */}
+                    { transferBalanceFrom ?
+                      <div>
+                        <p>
+                          <b>
+                            ~{ MIN_BALANCE }
+                          </b>
+                          &nbsp; is needed for transaction fee.
+                          <br />
+                          <br />
+          
+                          Coins will be transferred from account:&nbsp;
+                            <OpenModalButton id="selectMyAddress">
+                              <Account account={ transferBalanceFrom } />
+                            </OpenModalButton>
+                        </p>
+                        <AccountListModal
+                          accounts={accountsWithEnoughBalance}
+                          id="selectMyAddress"
+                          selectAccount={(_: any, selected: ReefAccount): void => setTransferBalanceFrom(selected)}
+                          title="Select account"
+                        />
+                        <button onClick={transfer( transferBalanceFrom, selectedReefSigner )}>Transfer</button>
+                      </div>
+                      : <p>Not enough REEF in account for connect EVM address transaction fee.</p>
                     }
-                  </div>
+                    </>
+                  )}
+                  </>
                 )}
               </div>
             )}
