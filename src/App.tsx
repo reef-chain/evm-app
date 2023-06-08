@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { decodeAddress } from '@polkadot/util-crypto';
-
+import { web3FromAddress } from '@reef-defi/extension-dapp';
 import { InjectedAccount, ReefSignerResponse, ReefVM } from "@reef-defi/extension-inject/types";
 import { Signer } from '@reef-defi/evm-provider';
 import { ethers } from 'ethers';
 import { Buffer } from 'buffer';
-import { ReefAccount, getReefExtension, getSignersWithEnoughBalance, hasBalanceForBinding, accountToReefAccount, MIN_BALANCE, toAddressShortDisplay, captureError } from './util';
+import { ReefAccount, getReefExtension, getSignersWithEnoughBalance, hasBalanceForBinding, 
+  accountToReefAccount, MIN_BALANCE, toAddressShortDisplay, captureError, subscribeToBalance } from './util';
 import { OpenModalButton } from './Modal';
 import Account from './Account';
 import { AccountListModal } from './AccountListModal';
-import { web3FromAddress } from '@reef-defi/extension-dapp';
 
 interface BindStatus {
   inProgress: boolean;
@@ -23,6 +23,8 @@ const App = (): JSX.Element => {
   const [selectedReefSigner, setSelectedReefSigner] = useState<ReefAccount>();
   const [transferBalanceFrom, setTransferBalanceFrom] = useState<ReefAccount | undefined>();
   const [bindStatus, setBindStatus] = useState<BindStatus>({ inProgress: false });
+  const selectedReefSignerRef = useRef(selectedReefSigner);
+  let unsubBalance = () => {};
 
   useEffect(() => {
     getAccounts();
@@ -36,10 +38,12 @@ const App = (): JSX.Element => {
       if (account) {
         account.signer = selectedSigner;
         setSelectedReefSigner(account);
+        selectedReefSignerRef.current = account;
         return;
       }
     } 
     setSelectedReefSigner(undefined);
+    selectedReefSignerRef.current = undefined;
   }, [selectedSigner, accounts]);
 
   useEffect(() => {
@@ -83,10 +87,22 @@ const App = (): JSX.Element => {
       reefExtension.reefSigner.subscribeSelectedSigner(async (sig:ReefSignerResponse) => {
         console.log("signer cb =", sig);
         setSelectedSigner(sig.data);
+        subscribeBalance(sig.data);
       }, ReefVM.NATIVE);
 
     } catch (err: any) {
       console.error(err);
+    }
+  }
+
+  const subscribeBalance = async (signer: Signer | undefined): Promise<void> => {
+    unsubBalance();
+    if (signer) {
+      unsubBalance = await subscribeToBalance(signer, async (balFree: BigInt) => {
+        if (selectedReefSignerRef.current?.address === signer._substrateAddress) {
+          setSelectedReefSigner({ ...selectedReefSignerRef.current, balance: balFree });
+        }
+      });
     }
   }
 

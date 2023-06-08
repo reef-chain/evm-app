@@ -112,3 +112,11 @@ export const captureError = (events: Event[]): string|undefined => {
   }
   return undefined;
 }
+
+export const subscribeToBalance = async (signer: Signer, cb: (freeBalance: any)=>void): Promise<any> => {
+  let address = await signer.getSubstrateAddress();
+  const unsub = await signer.provider.api.query.system.account(address, ({ data: balance }) => {
+      cb(BigInt(balance.free.toString()));
+  });
+  return unsub;
+}
