@@ -6,12 +6,12 @@ import { Signer } from '@reef-defi/evm-provider';
 import { ethers } from 'ethers';
 import { Buffer } from 'buffer';
 import { ReefAccount, getReefExtension, getSignersWithEnoughBalance, hasBalanceForBinding, 
-  accountToReefAccount, MIN_BALANCE, toAddressShortDisplay, captureError, subscribeToBalance } from './util';
+  accountToReefAccount, MIN_BALANCE, toAddressShortDisplay, captureError, subscribeToBalance, queryEvmAddress } from './util';
 import { OpenModalButton } from './Modal';
 import Account from './Account';
 import { AccountListModal } from './AccountListModal';
 
-interface BindStatus {
+interface Status {
   inProgress: boolean;
   message?: string;
 }
@@ -22,14 +22,15 @@ const App = (): JSX.Element => {
   const [selectedSigner, setSelectedSigner] = useState<Signer>();
   const [selectedReefSigner, setSelectedReefSigner] = useState<ReefAccount>();
   const [transferBalanceFrom, setTransferBalanceFrom] = useState<ReefAccount | undefined>();
-  const [bindStatus, setBindStatus] = useState<BindStatus>({ inProgress: false });
+  const [status, setStatus] = useState<Status>({ inProgress: false });
   const selectedReefSignerRef = useRef(selectedReefSigner);
   let unsubBalance = () => {};
-
+  
   useEffect(() => {
     getAccounts();
   }, []);
 
+  // Update selectedReefSigner
   useEffect(() => {
     if (selectedSigner) {
       const account = accounts.find(
@@ -46,6 +47,7 @@ const App = (): JSX.Element => {
     selectedReefSignerRef.current = undefined;
   }, [selectedSigner, accounts]);
 
+  // Update transferBalanceFrom and accountsWithEnoughBalance
   useEffect(() => {
     if (selectedReefSigner) {
       const fromAccounts = getSignersWithEnoughBalance(accounts, selectedReefSigner);
@@ -57,12 +59,14 @@ const App = (): JSX.Element => {
     }
   }, [accounts, selectedReefSigner]);
 
+  // Get accounts from Reef extension and subscribe to changes
   const getAccounts = async (): Promise<any> => {
+    setStatus({ inProgress: true, message: 'Loading accounts...' });
     try {
       let reefExtension = await getReefExtension('Reef EVM binding');
       if (!reefExtension) {
-        // If first attempt failed, wait 1 second and try again
-        await new Promise( resolve => setTimeout(resolve, 1000));
+        // If first attempt failed, wait .5 seconds and try again
+        await new Promise( resolve => setTimeout(resolve, 500));
         reefExtension = await getReefExtension('Reef EVM binding');
       }
       if (!reefExtension) {
@@ -75,6 +79,7 @@ const App = (): JSX.Element => {
         accountToReefAccount(account, provider)
       ));
       setAccounts(_reefAccounts);
+      setStatus({ inProgress: false });
 
       reefExtension.accounts.subscribe(async (accounts: InjectedAccount[]) => {
         console.log("accounts cb =", accounts);
@@ -95,6 +100,7 @@ const App = (): JSX.Element => {
     }
   }
 
+  // Subscribe to changes in selectedReefSigner balance
   const subscribeBalance = async (signer: Signer | undefined): Promise<void> => {
     unsubBalance();
     if (signer) {
@@ -106,49 +112,99 @@ const App = (): JSX.Element => {
     }
   }
 
+  // Transfer Reef from one account to another
   const transfer = (from: ReefAccount, to: ReefAccount) => async (): Promise<void> => {
+    setStatus({ inProgress: true, message: 'Transfer in progress...' });
     const fromInjector = await web3FromAddress(from.address);
     const api = to.signer!.provider.api;
     await api.isReadyOrError;
 
-    api.tx.balances
-      .transfer(to.address, ethers.parseEther(MIN_BALANCE))
-      .signAndSend(from.address, { signer: fromInjector.signer }, (status) => { 
-        console.log("status =", status)
-        const err = captureError(status.events);
-        if (err) {
-          console.log("err =", err)
-        } 
-      })
+    try {
+      await api.tx.balances
+        .transfer(to.address, ethers.parseEther(MIN_BALANCE))
+        .signAndSend(from.address, { signer: fromInjector.signer },
+          (status: any) => {
+            console.log("status =", status)
+            const err = captureError(status.events);
+            if (err) {
+              console.log("transfer error", err);
+              setStatus({ inProgress: false, message: 'Error transferring Reef.' });
+            }
+            if (status.dispatchError) {
+              console.log("transfer dispatch error", status.dispatchError.toString());
+              setStatus({ inProgress: false, message: 'Error transferring Reef.' });
+            }
+            if (status.status.isInBlock) {
+              console.log("Included at block hash", status.status.asInBlock.toHex());
+              setStatus({ inProgress: false });
+            }
+            if (status.status.isFinalized) {
+              console.log("Finalized block hash", status.status.asFinalized.toHex());
+            }
+          },
+      );
+    } catch (err) {
+      console.log("__error__", err);
+      setStatus({ inProgress: false, message: 'Error transferring Reef.' });
+    }
   }
 
+  // Bind EVM address
   const bindEvmAddress = async (reefAccount: ReefAccount): Promise<void> => {
-    setBindStatus({ inProgress: true, message: 'Sign message with an EVM wallet (e.g. Metamask, Trust, Phantom...).' });
+    setStatus({ inProgress: true, message: 'Sign message with an EVM wallet (e.g. Metamask, Trust, Phantom...).'});
 
     const publicKey = decodeAddress(reefAccount.address);
     const message = 'reef evm:' + Buffer.from(publicKey).toString('hex');
 
     const { evmAddress, signature, error } = await signMessage(message);
     if (error) {
-      setBindStatus({ inProgress: false, message: error });
+      setStatus({ inProgress: false, message: error });
       return;
     } else if (!evmAddress || !signature) {
-      setBindStatus({ inProgress: false, message: 'Failed to sign message.' });
+      setStatus({ inProgress: false, message: 'Failed to sign message.' });
       return;
     }
     
-    setBindStatus({ inProgress: true, message: `Send transaction with Reef extension to bind with ${evmAddress}.` });
+    setStatus({ inProgress: true, message: `Send transaction with Reef extension to bind with ${evmAddress}.` });
     
     try {
       await reefAccount.signer!.provider.api.tx.evmAccounts.claimAccount(evmAddress, signature)
-        .signAndSend(reefAccount.address);
-      setBindStatus({ inProgress: true, message: `Binding to address ${evmAddress}.` });
+        .signAndSend(reefAccount.address,
+          (status: any) => {
+            console.log("status =", status)
+            const err = captureError(status.events);
+            if (err) {
+              console.log("binding error", err);
+              setStatus({ inProgress: false, message: 'Failed to bind EVM address.' });
+            }
+            if (status.dispatchError) {
+              console.log("binding dispatch error", status.dispatchError.toString());
+              setStatus({ inProgress: false, message: 'Failed to bind EVM address.' });
+            }
+            if (status.status.isInBlock) {
+              console.log("Included at block hash", status.status.asInBlock.toHex());
+              if (selectedReefSigner) {
+                queryEvmAddress(selectedReefSigner.address, selectedReefSigner.signer!.provider)
+                .then(({ evmAddress, isEvmClaimed }) => {
+                  setSelectedReefSigner({ ...selectedReefSigner, evmAddress, isEvmClaimed });
+                  setStatus({ inProgress: false });
+                }).catch((err) => {
+                  setStatus({ inProgress: false, message: 'Failed to bind EVM address.' });
+                }
+              )}
+            }
+            if (status.status.isFinalized) {
+              console.log("Finalized block hash", status.status.asFinalized.toHex());
+            }
+          },
+        );
     } catch (err) {
-      console.error(err);
-      setBindStatus({ inProgress: false, message: 'Failed to send transaction.' });
+      console.log("error", err);
+      setStatus({ inProgress: false, message: 'Failed to bind EVM address.' });
     }
   }
 
+  // Sign message with EVM wallet
   const signMessage = async (message: string): Promise<{evmAddress?: string, signature?: string, error?: string}> => {
     // @ts-ignore
     const ethereumProvider = window.ethereum;
@@ -177,85 +233,72 @@ const App = (): JSX.Element => {
 
   return (
     <div>
-      <h1>Reef EVM</h1>
-
-      <div>
-        { selectedReefSigner ? (
-          <div>
-            <Account account={selectedReefSigner} />
-            { selectedReefSigner.isEvmClaimed ? (
-              <div>
-              {/* Claimed */}
-                <p>
-                  {' '}
-                  Successfully connected to Ethereum VM address&nbsp;
-                  <b>{toAddressShortDisplay(selectedReefSigner.evmAddress)}</b>
-                  .
-                  <br />
-                </p>
-              </div>
-            ) : (
-              <div>
-              {/* No claimed */}
-                { bindStatus.inProgress ? (
+      { selectedReefSigner ? (
+        <div>
+          <Account account={selectedReefSigner} />
+          { selectedReefSigner.isEvmClaimed ? (
+            <div>
+            {/* Claimed */}
+              <p>
+                {' '}
+                Successfully connected to Ethereum VM address&nbsp;
+                <b>{toAddressShortDisplay(selectedReefSigner.evmAddress)}</b>
+                .
+                <br />
+              </p>
+            </div>
+          ) : (
+            <div>
+            {/* No claimed */}
+              { !status.inProgress && ( <>
+                { hasBalanceForBinding(selectedReefSigner.balance) ? (
                   <div>
-                  {/* Bind in progress */}
-                    <p>Binding in progress...</p>
-                    <p>{ bindStatus.message }</p>
+                  {/* Bind */}
+                    <button onClick={() => bindEvmAddress(selectedReefSigner)}>Bind</button>
                   </div>
                 ) : (
                   <>
-                  {/* Bind not in progress */}
-                  { hasBalanceForBinding(selectedReefSigner.balance) ? (
+                  {/* Not enough balance */}
+                  { transferBalanceFrom ?
                     <div>
-                    {/* Bind */}
-                      <button onClick={() => bindEvmAddress(selectedReefSigner)}>Bind</button>
-                      { bindStatus.message && 
-                        <p>{ bindStatus.message }</p> 
-                      }
+                      <p>
+                        <b>
+                          ~{ MIN_BALANCE }
+                        </b>
+                        &nbsp; is needed for transaction fee.
+                        <br />
+                        <br />
+                        Coins will be transferred from account:&nbsp;
+                          <OpenModalButton id="selectMyAddress">
+                            <Account account={ transferBalanceFrom } />
+                          </OpenModalButton>
+                      </p>
+                      <AccountListModal
+                        accounts={accountsWithEnoughBalance}
+                        id="selectMyAddress"
+                        selectAccount={(_: any, selected: ReefAccount): void => setTransferBalanceFrom(selected)}
+                        title="Select account"
+                      />
+                      <button onClick={transfer( transferBalanceFrom, selectedReefSigner )}>Transfer</button>
                     </div>
-                  ) : (
-                    <>
-                    {/* Not enough balance */}
-                    { transferBalanceFrom ?
-                      <div>
-                        <p>
-                          <b>
-                            ~{ MIN_BALANCE }
-                          </b>
-                          &nbsp; is needed for transaction fee.
-                          <br />
-                          <br />
-          
-                          Coins will be transferred from account:&nbsp;
-                            <OpenModalButton id="selectMyAddress">
-                              <Account account={ transferBalanceFrom } />
-                            </OpenModalButton>
-                        </p>
-                        <AccountListModal
-                          accounts={accountsWithEnoughBalance}
-                          id="selectMyAddress"
-                          selectAccount={(_: any, selected: ReefAccount): void => setTransferBalanceFrom(selected)}
-                          title="Select account"
-                        />
-                        <button onClick={transfer( transferBalanceFrom, selectedReefSigner )}>Transfer</button>
-                      </div>
-                      : <p>Not enough REEF in account for connect EVM address transaction fee.</p>
-                    }
-                    </>
-                  )}
+                    : <p>Not enough REEF in account for connect EVM address transaction fee.</p>
+                  }
                   </>
                 )}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div>
-            {/* No account selected */}
-            <div>No account selected.</div>
-          </div>
-        )}
-      </div>
+              </>)}
+              { status.message && <p>{ status.message }</p> }
+            </div>
+          )}
+        </div>
+      ) : (
+        <div>
+          { status.inProgress && status.message ? (
+            <p>{ status.message }</p>
+          ) :(
+            <p>No account selected.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

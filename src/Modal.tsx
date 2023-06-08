@@ -19,8 +19,8 @@ export const Modal: React.FC<Modal> = ({
     aria-labelledby={id}
     aria-hidden="true"
   >
-    <div className="modal-dialog modal-dialog-centered">
-      <div className="modal-content border-rad">{children}</div>
+    <div>
+      <div>{children}</div>
     </div>
   </div>
 );

@@ -48,7 +48,7 @@ const computeDefaultEvmAddress = (address: string): string => {
   );
 }
 
-const queryEvmAddress = async (address: string, provider: Provider): Promise<{ evmAddress: string, isEvmClaimed: boolean }> => {
+export const queryEvmAddress = async (address: string, provider: Provider): Promise<{ evmAddress: string, isEvmClaimed: boolean }> => {
   const claimedAddress = await provider.api.query.evmAccounts.evmAddresses(address);
   if (!claimedAddress.isEmpty) {
     const evmAddress = getAddress(claimedAddress.toString());
