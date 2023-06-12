@@ -261,7 +261,7 @@ const App = (): JSX.Element => {
             {/* No claimed */}
               { !status.inProgress && ( <>
                 { hasBalanceForBinding(selectedReefSigner.balance) ? (
-                  <div>
+                  <div className='center-page'>
                   {/* Bind */}
                   <GradientButton title={"Bind"} func={() => bindEvmAddress(selectedReefSigner)}/>
                   </div>
@@ -283,7 +283,10 @@ const App = (): JSX.Element => {
                       selectedAccount = {transferBalanceFrom.address}
                         accounts={accountsWithEnoughBalance}
                         id="selectMyAddress"
-                        selectAccount={(_: any, selected: ReefAccount): void => setTransferBalanceFrom(selected)}
+                        selectAccount={(_: any, selected: ReefAccount): void => {
+                          setTransferBalanceFrom(selected);
+                          setDisplayModal(false);
+                        }}
                         title="Select account"
                         displayModal={displayModal}
                         handleClose={()=>setDisplayModal(false)}
@@ -295,13 +298,14 @@ const App = (): JSX.Element => {
                   </>
                 )}
               </>)}
-              { status.message && <p>{ status.message }</p> }
+              { status.message && status.inProgress != false?<Loader text={ status.message } />:<div className='error-message'>{status.message}</div>}
             </div>
           )}
         </div>
       ) : (
         <div>
           { status.inProgress && status.message ? (
+            
             <div>
               <Loader text={ status.message }/>
             </div>

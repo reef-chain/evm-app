@@ -46,7 +46,7 @@ export const Modal: React.FC<ModalProps> = ({
       style={{ display: 'block', backgroundColor: 'rgba(0, 0, 0, 0.5)', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999 }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-        <div ref={modalRef} style={{ backgroundColor: 'white', borderRadius: '8px', padding: '20px' }}>
+        <div ref={modalRef} style={{ backgroundColor: '#eeebf6', borderRadius: '8px', padding: '20px' }}>
           {children}
         </div>
       </div>
@@ -55,7 +55,7 @@ export const Modal: React.FC<ModalProps> = ({
 };
 
 export const Title: React.FC<Children> = ({ children }): JSX.Element => (
-  <h5>{children}</h5>
+  <div style={{'fontSize':'24px'}}>{children}</div>
 );
 
 export const ModalHeader: React.FC<Children> = ({ children }): JSX.Element => (
