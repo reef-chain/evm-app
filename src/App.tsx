@@ -243,7 +243,7 @@ const App = (): JSX.Element => {
         <div>
           <Header />
           <div className='display_account_info'>
-          <Account account={selectedReefSigner} />
+          <Account account={selectedReefSigner} isDestAccount={true} />
           </div>
           { selectedReefSigner.isEvmClaimed ? (
             <div>
@@ -269,19 +269,16 @@ const App = (): JSX.Element => {
                   <>
                   {/* Not enough balance */}
                   { transferBalanceFrom ?
-                    <div>
+                    <div className='center-page'>
                       <p>
-                        <b>
+                        Coins will be transferred from account &nbsp;<b>
                           ~{ MIN_BALANCE }
                         </b>
                         &nbsp; is needed for transaction fee.
-                        <br />
-                        <br />
-                        Coins will be transferred from account:&nbsp;
-                          <OpenModalButton id="selectMyAddress">
+                        <br /><br />
                             <Account account={ transferBalanceFrom } />
-                          </OpenModalButton>
                       </p>
+                      
                       <AccountListModal
                       selectedAccount = {transferBalanceFrom.address}
                         accounts={accountsWithEnoughBalance}
