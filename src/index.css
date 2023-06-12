@@ -4,3 +4,8 @@
     background-color: #eeebf6;
     font-family: 'Poppins', sans-serif;
 }
+
+.display_account_info{
+    display: flex;
+    justify-content: center;
+}

@@ -13,6 +13,7 @@ import { AccountListModal } from './components/AccountListModal/AccountListModal
 import Loader from './components/Loader/Loader';
 import GradientButton from './components/GradientButton/GradientButton';
 import Navbar from './components/Navbar/Navbar';
+import Header from './components/Header/Header';
 
 interface Status {
   inProgress: boolean;
@@ -240,7 +241,10 @@ const App = (): JSX.Element => {
       <Navbar showDisplayModal={setDisplayModal} shouldDisplayBtn={transferBalanceFrom!=undefined}/>
       { selectedReefSigner ? (
         <div>
+          <Header />
+          <div className='display_account_info'>
           <Account account={selectedReefSigner} />
+          </div>
           { selectedReefSigner.isEvmClaimed ? (
             <div>
             {/* Claimed */}
