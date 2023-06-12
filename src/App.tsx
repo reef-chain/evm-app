@@ -10,6 +10,7 @@ import { ReefAccount, getReefExtension, getSignersWithEnoughBalance, hasBalanceF
 import { OpenModalButton } from './Modal';
 import Account from './Account';
 import { AccountListModal } from './AccountListModal';
+import Loader from './components/Loader/Loader';
 
 interface Status {
   inProgress: boolean;
@@ -293,7 +294,9 @@ const App = (): JSX.Element => {
       ) : (
         <div>
           { status.inProgress && status.message ? (
-            <p>{ status.message }</p>
+            <div>
+              <Loader text={ status.message }/>
+            </div>
           ) :(
             <p>No account selected.</p>
           )}
