@@ -1,7 +1,7 @@
 import { ReactElement } from 'react';
-import { ReefAccount } from './util';
-import { Modal, ModalHeader, Title } from './Modal';
-import Account from './Account';
+import { ReefAccount } from '../../util';
+import { Modal, ModalHeader, Title } from '../../Modal';
+import Account from '../../Account';
 
 interface AccountListModal {
   id: string;

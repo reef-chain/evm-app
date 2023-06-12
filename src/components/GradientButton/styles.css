@@ -1,0 +1,28 @@
+
+.gradient-button{
+    display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
+  background-color: #e7def0;
+  border: none;
+  white-space: nowrap;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  line-height: 1.1;
+  font-weight: 600;
+  padding: 12px 18px;
+  user-select: none;
+  font-weight: 500;
+  color: white;
+  background: linear-gradient(135deg, #ae27a5, #742cb2);
+  box-shadow: 0 5px 20px -10px #742cb2;
+  transition: all 0.125s;
+  margin: 20px;
+}
+
+.gradient-button:hover {
+    transition: none;
+    cursor: pointer;
+    background-color: #e1d5ec;
+  }

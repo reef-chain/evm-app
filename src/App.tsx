@@ -9,8 +9,9 @@ import { ReefAccount, getReefExtension, getSignersWithEnoughBalance, hasBalanceF
   accountToReefAccount, MIN_BALANCE, toAddressShortDisplay, captureError, subscribeToBalance, queryEvmAddress } from './util';
 import { OpenModalButton } from './Modal';
 import Account from './Account';
-import { AccountListModal } from './AccountListModal';
+import { AccountListModal } from './components/AccountListModal/AccountListModal';
 import Loader from './components/Loader/Loader';
+import GradientButton from './components/GradientButton/GradientButton';
 
 interface Status {
   inProgress: boolean;
@@ -280,7 +281,7 @@ const App = (): JSX.Element => {
                         selectAccount={(_: any, selected: ReefAccount): void => setTransferBalanceFrom(selected)}
                         title="Select account"
                       />
-                      <button onClick={transfer( transferBalanceFrom, selectedReefSigner )}>Transfer</button>
+                      <GradientButton title={"Transfer"} func={transfer( transferBalanceFrom, selectedReefSigner )}/>
                     </div>
                     : <p>Not enough REEF in account for connect EVM address transaction fee.</p>
                   }
