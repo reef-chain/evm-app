@@ -8,7 +8,7 @@ import { Buffer } from 'buffer';
 import { ReefAccount, getReefExtension, getSignersWithEnoughBalance, hasBalanceForBinding, 
   accountToReefAccount, MIN_BALANCE, toAddressShortDisplay, captureError, subscribeToBalance, queryEvmAddress } from './util';
 import { OpenModalButton } from './Modal';
-import Account from './Account';
+import Account from './components/AccountBox/AccountBox';
 import { AccountListModal } from './components/AccountListModal/AccountListModal';
 import Loader from './components/Loader/Loader';
 import GradientButton from './components/GradientButton/GradientButton';

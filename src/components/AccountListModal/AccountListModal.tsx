@@ -1,7 +1,7 @@
 import { ReactElement } from 'react';
 import { ReefAccount } from '../../util';
 import { Modal, ModalHeader, Title } from '../../Modal';
-import Account from '../../Account';
+import Account from '../AccountBox/AccountBox';
 
 interface AccountListModal {
   id: string;
@@ -19,7 +19,7 @@ export const AccountListModal = ({
   title = 'Select account',
 }: AccountListModal): JSX.Element => {
   const accountsView = accounts.map((acc, index) => (
-    <Account key={acc.address} account={acc} onClick={() => selectAccount(index, acc)}/>
+    <Account key={acc.address} isAccountSelected={true} account={acc} onClick={() => selectAccount(index, acc)}/>
   ));
 
   return (
@@ -39,6 +39,7 @@ export const AccountListModal = ({
         <button
           type="button"
           data-bs-dismiss="modal"
+          onClick={()=>console.log('sdf')}
         >
           X
         </button>

@@ -1,0 +1,39 @@
+.accountBox {
+    margin-bottom: 20px;
+    background-color: #eeebf6;
+    border-radius: 20px;
+    padding: 24px 0px 24px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    max-width: 45vw;
+  }
+  
+  .accountBox:hover {
+    background-color: #eeebf6;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  .accountBox__identicon{
+    margin-right: 16px;
+  }
+
+  .accountBox__details{
+    padding: 8px;
+  }
+
+  .accountBox__details_shortaddress{
+    color: #898e9c;
+    font-size: 14px;
+    
+  }
+  .accountBox__details_name{
+font-size: 20px;
+font-weight: 500;
+  }
+
+  .accountBox--selected{
+    border: black;
+  }
