@@ -2,15 +2,18 @@ import Identicon from '@polkadot/react-identicon';
 import { ReefAccount, toAddressShortDisplay } from '../../util';
 import './styles.css'
 import GradientButton from '../GradientButton/GradientButton';
+import TextButton from '../TextButton/TextButton';
 
 interface Account {
   account: ReefAccount
   onClick?: () => void;
   isAccountSelected?:boolean;
   isDestAccount?:boolean;
+  showChangeAccountBtn?:boolean;
+  changeAccountFunc?:(changeAccount:boolean)=>void;
 }
 
-const Account = ({ account, onClick ,isAccountSelected,isDestAccount}: Account): JSX.Element => (
+const Account = ({ account, onClick ,isAccountSelected,isDestAccount,showChangeAccountBtn,changeAccountFunc}: Account): JSX.Element => (
   <div onClick={onClick} className={`accountBox`}>
     <div className='accountBox__identicon'>
       <Identicon value={account.address} size={64} theme="substrate" />
@@ -28,7 +31,7 @@ const Account = ({ account, onClick ,isAccountSelected,isDestAccount}: Account):
     </div>
     {isDestAccount==true?
     <div>
-    </div>  :
+    </div>  : showChangeAccountBtn!=true?
     <div>
       {isAccountSelected == false? (
         <div className='accountBox__end'>
@@ -42,7 +45,9 @@ const Account = ({ account, onClick ,isAccountSelected,isDestAccount}: Account):
         <GradientButton title={"Selected"} isEnabled={false}/>
       </div>
       }
-    </div>
+    </div>:<>
+    <TextButton title={"Change Account"} func={changeAccountFunc}/>
+    </>
   }
   </div>
 );

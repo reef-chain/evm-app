@@ -238,21 +238,19 @@ const App = (): JSX.Element => {
 
   return (
     <div>
-      <Navbar showDisplayModal={setDisplayModal} shouldDisplayBtn={transferBalanceFrom!=undefined}/>
+      <Navbar showDisplayModal={setDisplayModal} shouldDisplayBtn={transferBalanceFrom!=undefined && selectedReefSigner?.isEvmClaimed==false}/>
       { selectedReefSigner ? (
         <div>
           <Header />
           <div className='display_account_info'>
-          <Account account={selectedReefSigner} isDestAccount={true} />
+          <Account account={selectedReefSigner} isDestAccount={selectedReefSigner.isEvmClaimed==false} />
           </div>
           { selectedReefSigner.isEvmClaimed ? (
             <div>
             {/* Claimed */}
-              <p>
-                {' '}
+              <p className='center-page'>
                 Successfully connected to Ethereum VM address&nbsp;
                 <b>{toAddressShortDisplay(selectedReefSigner.evmAddress)}</b>
-                .
                 <br />
               </p>
             </div>
@@ -271,14 +269,14 @@ const App = (): JSX.Element => {
                   { transferBalanceFrom ?
                     <div className='center-page'>
                       <p>
-                        Coins will be transferred from <button className='text-btn' onClick={()=>setDisplayModal(true)}>this account</button>,  &nbsp;<b>
+                        Reefs will be transferred from <button className='text-btn' onClick={()=>setDisplayModal(true)}>this account</button>,  &nbsp;<b>
                           ~{ MIN_BALANCE }
                         </b>
                         &nbsp; is needed for transaction fee or<br /> <button className='text-btn' onClick={()=>setDisplayModal(true)}> transfer from different account</button>
                         <br /><br />
                         </p>
                         <div className='display_account_info'>
-                            <Account account={ transferBalanceFrom } />
+                            <Account account={ transferBalanceFrom } showChangeAccountBtn={true} changeAccountFunc={()=>setDisplayModal(true)}/>
                             </div>
                       
                       
