@@ -10,6 +10,8 @@ interface AccountListModal {
   backButtonModalId?: string;
   title?: string | ReactElement;
   selectedAccount: string;
+  displayModal:boolean;
+  handleClose:(displayModal:boolean)=>void;
 }
 
 export const AccountListModal = ({
@@ -18,6 +20,8 @@ export const AccountListModal = ({
   selectAccount,
   selectedAccount,
   backButtonModalId,
+  displayModal,
+  handleClose,
   title = 'Select account',
 }: AccountListModal): JSX.Element => {
   const accountsView = accounts.map((acc, index) => (
@@ -25,7 +29,7 @@ export const AccountListModal = ({
   ));
 
   return (
-    <Modal id={id}>
+    <Modal id={id} displayModal={displayModal} setDisplayModal={handleClose}>
       <ModalHeader>
         {!!backButtonModalId && (
           <button
@@ -38,13 +42,6 @@ export const AccountListModal = ({
           </button>
         )}
         <Title>{title}</Title>
-        <button
-          type="button"
-          data-bs-dismiss="modal"
-          onClick={()=>console.log('sdf')}
-        >
-          X
-        </button>
       </ModalHeader>
       <div>
         <ul style={{ height: '300px' }}>

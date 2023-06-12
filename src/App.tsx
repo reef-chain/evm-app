@@ -12,6 +12,7 @@ import Account from './components/AccountBox/AccountBox';
 import { AccountListModal } from './components/AccountListModal/AccountListModal';
 import Loader from './components/Loader/Loader';
 import GradientButton from './components/GradientButton/GradientButton';
+import Navbar from './components/Navbar/Navbar';
 
 interface Status {
   inProgress: boolean;
@@ -20,6 +21,7 @@ interface Status {
 
 const App = (): JSX.Element => {
   const [accounts, setAccounts] = useState<ReefAccount[]>([]);
+  const [displayModal, setDisplayModal] = useState<boolean>(false);
   const [accountsWithEnoughBalance, setAccountsWithEnoughBalance] = useState<ReefAccount[]>([]);
   const [selectedSigner, setSelectedSigner] = useState<Signer>();
   const [selectedReefSigner, setSelectedReefSigner] = useState<ReefAccount>();
@@ -235,6 +237,7 @@ const App = (): JSX.Element => {
 
   return (
     <div>
+      <Navbar showDisplayModal={setDisplayModal} shouldDisplayBtn={transferBalanceFrom!=undefined}/>
       { selectedReefSigner ? (
         <div>
           <Account account={selectedReefSigner} />
@@ -256,7 +259,7 @@ const App = (): JSX.Element => {
                 { hasBalanceForBinding(selectedReefSigner.balance) ? (
                   <div>
                   {/* Bind */}
-                    <button onClick={() => bindEvmAddress(selectedReefSigner)}>Bind</button>
+                  <GradientButton title={"Bind"} func={() => bindEvmAddress(selectedReefSigner)}/>
                   </div>
                 ) : (
                   <>
@@ -281,6 +284,8 @@ const App = (): JSX.Element => {
                         id="selectMyAddress"
                         selectAccount={(_: any, selected: ReefAccount): void => setTransferBalanceFrom(selected)}
                         title="Select account"
+                        displayModal={displayModal}
+                        handleClose={()=>setDisplayModal(false)}
                       />
                       <GradientButton title={"Transfer"} func={transfer( transferBalanceFrom, selectedReefSigner )}/>
                     </div>
