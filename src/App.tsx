@@ -14,6 +14,7 @@ import Loader from './components/Loader/Loader';
 import GradientButton from './components/GradientButton/GradientButton';
 import Navbar from './components/Navbar/Navbar';
 import Header from './components/Header/Header';
+import TextButton from './components/TextButton/TextButton';
 
 interface Status {
   inProgress: boolean;
@@ -269,10 +270,13 @@ const App = (): JSX.Element => {
                   { transferBalanceFrom ?
                     <div className='center-page'>
                       <p>
-                        Reefs will be transferred from <button className='text-btn' onClick={()=>setDisplayModal(true)}>this account</button>,  &nbsp;<b>
-                          ~{ MIN_BALANCE }
+                        Reefs will be transferred from 
+                        <TextButton title='this account' func={setDisplayModal}/>
+                       ,  &nbsp;<b>
+                          ~{ MIN_BALANCE + 'REEFs' }
                         </b>
-                        &nbsp; is needed for transaction fee or<br /> <button className='text-btn' onClick={()=>setDisplayModal(true)}> transfer from different account</button>
+                        &nbsp; are needed for transaction fee or<br /> 
+                        <TextButton title='transfer from different account' func={setDisplayModal}/>
                         <br /><br />
                         </p>
                         <div className='display_account_info'>
