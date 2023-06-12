@@ -21,7 +21,8 @@
   }
 
   .accountBox__details{
-    padding: 8px;
+    position: relative;
+    left: -40px;
   }
 
   .accountBox__details_shortaddress{
@@ -34,6 +35,10 @@ font-size: 20px;
 font-weight: 500;
   }
 
-  .accountBox--selected{
-    border: black;
+  .accountBox__selected{
+    font-size: 14px;
+    padding-right: 10px;
+    color: #898e9c;
+    font-weight: 500;
+    letter-spacing: 0.4px;
   }

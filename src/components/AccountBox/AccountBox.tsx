@@ -19,11 +19,15 @@ const Account = ({ account, onClick ,isAccountSelected}: Account): JSX.Element =
       <div className='accountBox__details_shortaddress'>
         <span>Native Address : </span>{ toAddressShortDisplay(account.address) }</div>
     </div>
-    {isAccountSelected && (
+    {isAccountSelected == false? (
       <div className='accountBox__end'>
-        <GradientButton title={"Select"}/>
+        <GradientButton title={"Select"} />
       </div>
-    )}
+    ):
+    <div className='accountBox__selected'>
+      Selected
+    </div>
+    }
   </div>
 );
 
