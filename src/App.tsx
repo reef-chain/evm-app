@@ -271,13 +271,16 @@ const App = (): JSX.Element => {
                   { transferBalanceFrom ?
                     <div className='center-page'>
                       <p>
-                        Coins will be transferred from account &nbsp;<b>
+                        Coins will be transferred from <button className='text-btn' onClick={()=>setDisplayModal(true)}>this account</button>,  &nbsp;<b>
                           ~{ MIN_BALANCE }
                         </b>
-                        &nbsp; is needed for transaction fee.
+                        &nbsp; is needed for transaction fee or<br /> <button className='text-btn' onClick={()=>setDisplayModal(true)}> transfer from different account</button>
                         <br /><br />
+                        </p>
+                        <div className='display_account_info'>
                             <Account account={ transferBalanceFrom } />
-                      </p>
+                            </div>
+                      
                       
                       <AccountListModal
                       selectedAccount = {transferBalanceFrom.address}
