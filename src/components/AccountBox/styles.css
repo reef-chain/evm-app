@@ -8,7 +8,7 @@
     justify-content: space-around;
     transition: background-color 0.3s, box-shadow 0.3s;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    max-width: 45vw;
+    max-width: 48vw;
   }
   
   .accountBox:hover {
@@ -22,7 +22,7 @@
 
   .accountBox__details{
     position: relative;
-    left: -40px;
+    left: -25px;
   }
 
   .accountBox__details_shortaddress{

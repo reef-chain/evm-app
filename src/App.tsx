@@ -276,6 +276,7 @@ const App = (): JSX.Element => {
                           </OpenModalButton>
                       </p>
                       <AccountListModal
+                      selectedAccount = {transferBalanceFrom.address}
                         accounts={accountsWithEnoughBalance}
                         id="selectMyAddress"
                         selectAccount={(_: any, selected: ReefAccount): void => setTransferBalanceFrom(selected)}

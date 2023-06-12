@@ -24,8 +24,11 @@ const Account = ({ account, onClick ,isAccountSelected}: Account): JSX.Element =
         <GradientButton title={"Select"} />
       </div>
     ):
-    <div className='accountBox__selected'>
+    <div className='accountBox__end'>
+    {/* <div className='accountBox__selected'>
       Selected
+    </div> */}
+      <GradientButton title={"Selected"} isEnabled={false}/>
     </div>
     }
   </div>

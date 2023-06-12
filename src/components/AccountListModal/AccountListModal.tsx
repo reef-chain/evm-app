@@ -9,17 +9,19 @@ interface AccountListModal {
   selectAccount: (index: number, signer: ReefAccount) => void;
   backButtonModalId?: string;
   title?: string | ReactElement;
+  selectedAccount: string;
 }
 
 export const AccountListModal = ({
   id,
   accounts,
   selectAccount,
+  selectedAccount,
   backButtonModalId,
   title = 'Select account',
 }: AccountListModal): JSX.Element => {
   const accountsView = accounts.map((acc, index) => (
-    <Account key={acc.address} isAccountSelected={true} account={acc} onClick={() => selectAccount(index, acc)}/>
+    <Account key={acc.address} isAccountSelected={selectedAccount==acc.address} account={acc} onClick={() => selectAccount(index, acc)}/>
   ));
 
   return (

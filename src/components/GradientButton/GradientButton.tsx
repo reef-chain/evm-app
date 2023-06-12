@@ -4,11 +4,12 @@ import './styles.css'
 export interface Props{
     func?:any;
     title:String;
+    isEnabled?:false;
 }
 
-function GradientButton({func,title}:Props) {
+function GradientButton({func,title,isEnabled}:Props) {
   return (
-    <button className='gradient-button' onClick={func}>{title}</button>
+    <button className={`${(isEnabled==false)?'gradient-button-disabled':'gradient-button'} `} onClick={func}>{title}</button>
   )
 }
 
