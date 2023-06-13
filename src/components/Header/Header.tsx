@@ -3,7 +3,7 @@ import './styles.css'
 
 function Header() {
   return (
-    <div className='header'>Reef EVM Bind</div>
+    <div className='header'>Custom Reef EVM address</div>
   )
 }
 
