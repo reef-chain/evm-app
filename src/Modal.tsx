@@ -1,32 +1,61 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 
 interface Children {
   children: React.ReactNode;
 }
 
-interface Modal extends Children {
+interface ModalProps extends Children {
   id?: string;
+  displayModal?: boolean;
+  setDisplayModal? : (displayModal:boolean)=>void;
 }
 
-export const Modal: React.FC<Modal> = ({
+export const Modal: React.FC<ModalProps> = ({
   children,
   id = 'modal',
-}): JSX.Element => (
-  <div
-    className="modal fade"
-    id={id}
-    tabIndex={-1}
-    aria-labelledby={id}
-    aria-hidden="true"
-  >
-    <div>
-      <div>{children}</div>
+  displayModal = false,
+  setDisplayModal
+}): JSX.Element | null => {
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node) && setDisplayModal!) {   
+        setDisplayModal(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, []);
+
+  if (!displayModal) {
+    return null;
+  }
+
+  return (
+    <div
+      className="modal fade"
+      id={id}
+      tabIndex={-1}
+      aria-labelledby={id}
+      aria-hidden="true"
+      style={{ display: 'block', backgroundColor: 'rgba(0, 0, 0, 0.5)', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999 }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+        <div ref={modalRef} style={{ backgroundColor: '#eeebf6', borderRadius: '8px', padding: '20px' }}>
+          {children}
+        </div>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export const Title: React.FC<Children> = ({ children }): JSX.Element => (
-  <h5>{children}</h5>
+  <div style={{'fontSize':'24px'}}>{children}</div>
 );
 
 export const ModalHeader: React.FC<Children> = ({ children }): JSX.Element => (
@@ -41,13 +70,13 @@ export const ModalFooter: React.FC<Children> = ({ children }): JSX.Element => (
   <div>{children}</div>
 );
 
-interface ModalClose {
+interface ModalCloseProps {
   onClick?: () => void;
   className?: string;
   children?: React.ReactNode;
 }
 
-export const ModalClose: React.FC<ModalClose> = ({
+export const ModalClose: React.FC<ModalCloseProps> = ({
   children,
   onClick = () => {},
   className,
@@ -58,18 +87,19 @@ export const ModalClose: React.FC<ModalClose> = ({
     onClick={onClick}
     data-bs-dismiss="modal"
     aria-label="Close"
+    style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', cursor: 'pointer' }}
   >
     {children}
   </button>
 );
 
-interface OpenModalButton extends Children {
+interface OpenModalButtonProps extends Children {
   id?: string;
   disabled?: boolean;
   className?: string;
 }
 
-export const OpenModalButton: React.FC<OpenModalButton> = ({
+export const OpenModalButton: React.FC<OpenModalButtonProps> = ({
   children,
   id = 'open-modal-button',
   disabled,
@@ -86,21 +116,21 @@ export const OpenModalButton: React.FC<OpenModalButton> = ({
   </button>
 );
 
-interface ConfirmationModal extends Children {
+interface ConfirmationModalProps extends Children {
   id?: string;
   title: string;
   confirmFun: () => void;
   confirmBtnLabel?: string;
 }
 
-const ConfirmationModal: React.FC<ConfirmationModal> = ({
+const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   id = 'exampleModal',
   title,
   confirmFun,
   confirmBtnLabel = 'Confirm',
   children,
 }): JSX.Element => (
-  <Modal id={id}>
+  <Modal id={id} displayModal={true}>
     <ModalHeader>
       <Title>{title}</Title>
       <ModalClose />

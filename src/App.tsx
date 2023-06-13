@@ -8,8 +8,13 @@ import { Buffer } from 'buffer';
 import { ReefAccount, getReefExtension, getSignersWithEnoughBalance, hasBalanceForBinding, 
   accountToReefAccount, MIN_BALANCE, toAddressShortDisplay, captureError, subscribeToBalance, queryEvmAddress } from './util';
 import { OpenModalButton } from './Modal';
-import Account from './Account';
-import { AccountListModal } from './AccountListModal';
+import Account from './components/AccountBox/AccountBox';
+import { AccountListModal } from './components/AccountListModal/AccountListModal';
+import Loader from './components/Loader/Loader';
+import GradientButton from './components/GradientButton/GradientButton';
+import Navbar from './components/Navbar/Navbar';
+import Header from './components/Header/Header';
+import TextButton from './components/TextButton/TextButton';
 
 interface Status {
   inProgress: boolean;
@@ -18,6 +23,7 @@ interface Status {
 
 const App = (): JSX.Element => {
   const [accounts, setAccounts] = useState<ReefAccount[]>([]);
+  const [displayModal, setDisplayModal] = useState<boolean>(false);
   const [accountsWithEnoughBalance, setAccountsWithEnoughBalance] = useState<ReefAccount[]>([]);
   const [selectedSigner, setSelectedSigner] = useState<Signer>();
   const [selectedReefSigner, setSelectedReefSigner] = useState<ReefAccount>();
@@ -233,17 +239,19 @@ const App = (): JSX.Element => {
 
   return (
     <div>
+      <Navbar showDisplayModal={setDisplayModal} shouldDisplayBtn={transferBalanceFrom!=undefined && selectedReefSigner?.isEvmClaimed==false}/>
       { selectedReefSigner ? (
         <div>
-          <Account account={selectedReefSigner} />
+          <Header />
+          <div className='display_account_info'>
+          <Account account={selectedReefSigner} isDestAccount={selectedReefSigner.isEvmClaimed==false} />
+          </div>
           { selectedReefSigner.isEvmClaimed ? (
             <div>
             {/* Claimed */}
-              <p>
-                {' '}
+              <p className='center-page'>
                 Successfully connected to Ethereum VM address&nbsp;
                 <b>{toAddressShortDisplay(selectedReefSigner.evmAddress)}</b>
-                .
                 <br />
               </p>
             </div>
@@ -252,48 +260,60 @@ const App = (): JSX.Element => {
             {/* No claimed */}
               { !status.inProgress && ( <>
                 { hasBalanceForBinding(selectedReefSigner.balance) ? (
-                  <div>
+                  <div className='center-page'>
                   {/* Bind */}
-                    <button onClick={() => bindEvmAddress(selectedReefSigner)}>Bind</button>
+                  <GradientButton title={"Bind"} func={() => bindEvmAddress(selectedReefSigner)}/>
                   </div>
                 ) : (
                   <>
                   {/* Not enough balance */}
                   { transferBalanceFrom ?
-                    <div>
+                    <div className='center-page'>
                       <p>
-                        <b>
-                          ~{ MIN_BALANCE }
+                        Reefs will be transferred from 
+                        <TextButton title='this account' func={setDisplayModal}/>
+                       ,  &nbsp;<b>
+                          ~{ MIN_BALANCE + 'REEFs' }
                         </b>
-                        &nbsp; is needed for transaction fee.
-                        <br />
-                        <br />
-                        Coins will be transferred from account:&nbsp;
-                          <OpenModalButton id="selectMyAddress">
-                            <Account account={ transferBalanceFrom } />
-                          </OpenModalButton>
-                      </p>
+                        &nbsp; are needed for transaction fee or<br /> 
+                        <TextButton title='transfer from different account' func={setDisplayModal}/>
+                        <br /><br />
+                        </p>
+                        <div className='display_account_info'>
+                            <Account account={ transferBalanceFrom } showChangeAccountBtn={true} changeAccountFunc={()=>setDisplayModal(true)}/>
+                            </div>
+                      
+                      
                       <AccountListModal
+                      selectedAccount = {transferBalanceFrom.address}
                         accounts={accountsWithEnoughBalance}
                         id="selectMyAddress"
-                        selectAccount={(_: any, selected: ReefAccount): void => setTransferBalanceFrom(selected)}
+                        selectAccount={(_: any, selected: ReefAccount): void => {
+                          setTransferBalanceFrom(selected);
+                          setDisplayModal(false);
+                        }}
                         title="Select account"
+                        displayModal={displayModal}
+                        handleClose={()=>setDisplayModal(false)}
                       />
-                      <button onClick={transfer( transferBalanceFrom, selectedReefSigner )}>Transfer</button>
+                      <GradientButton title={"Transfer"} func={transfer( transferBalanceFrom, selectedReefSigner )}/>
                     </div>
                     : <p>Not enough REEF in account for connect EVM address transaction fee.</p>
                   }
                   </>
                 )}
               </>)}
-              { status.message && <p>{ status.message }</p> }
+              { status.message && status.inProgress != false?<Loader text={ status.message } />:<div className='error-message'>{status.message}</div>}
             </div>
           )}
         </div>
       ) : (
         <div>
           { status.inProgress && status.message ? (
-            <p>{ status.message }</p>
+            
+            <div>
+              <Loader text={ status.message }/>
+            </div>
           ) :(
             <p>No account selected.</p>
           )}
