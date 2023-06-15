@@ -239,7 +239,7 @@ const App = (): JSX.Element => {
 
   return (
     <div>
-      <Navbar showDisplayModal={setDisplayModal} shouldDisplayBtn={transferBalanceFrom!=undefined && selectedReefSigner?.isEvmClaimed==false}/>
+      <Navbar />
       { selectedReefSigner ? (
         <div>
           <Header />
