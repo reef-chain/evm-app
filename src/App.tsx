@@ -284,7 +284,7 @@ const App = (): JSX.Element => {
                             </div>
 
 
-                      {/*<AccountListModal
+                      <AccountListModal
                       selectedAccount = {transferBalanceFrom.address}
                         accounts={accountsWithEnoughBalance}
                         id="selectMyAddress"
@@ -295,7 +295,7 @@ const App = (): JSX.Element => {
                         title="Select account"
                         displayModal={displayModal}
                         handleClose={()=>setDisplayModal(false)}
-                      />*/}
+                      />
                       <GradientButton title={"Transfer"} func={transfer( transferBalanceFrom, selectedReefSigner )}/>
                     </div>
                     : <p>Not enough REEF on Reef chain account for EVM address transaction fee.</p>
