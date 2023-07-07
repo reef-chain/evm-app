@@ -35,3 +35,7 @@
 .text-btn:hover {
     cursor:pointer
 }
+
+.content {
+    padding: 2em;
+}

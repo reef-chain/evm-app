@@ -1,19 +1,26 @@
-import { useEffect, useRef, useState } from 'react';
-import { decodeAddress } from '@polkadot/util-crypto';
-import { web3FromAddress } from '@reef-defi/extension-dapp';
-import { InjectedAccount, ReefSignerResponse, ReefVM } from "@reef-defi/extension-inject/types";
-import { Signer } from '@reef-defi/evm-provider';
-import { ethers } from 'ethers';
-import { Buffer } from 'buffer';
-import { ReefAccount, getReefExtension, getSignersWithEnoughBalance, hasBalanceForBinding,
-  accountToReefAccount, MIN_BALANCE, toAddressShortDisplay, captureError, subscribeToBalance, queryEvmAddress } from './util';
-import { OpenModalButton } from './Modal';
+import {useEffect, useRef, useState} from 'react';
+import {decodeAddress} from '@polkadot/util-crypto';
+import {web3FromAddress} from '@reef-defi/extension-dapp';
+import {InjectedAccount, ReefSignerResponse, ReefVM} from "@reef-defi/extension-inject/types";
+import {Signer} from '@reef-defi/evm-provider';
+import {ethers} from 'ethers';
+import {Buffer} from 'buffer';
+import {
+  accountToReefAccount,
+  captureError,
+  getReefExtension,
+  getSignersWithEnoughBalance,
+  hasBalanceForBinding,
+  MIN_BALANCE,
+  queryEvmAddress,
+  ReefAccount,
+  subscribeToBalance,
+  toAddressShortDisplay
+} from './util';
 import Account from './components/AccountBox/AccountBox';
-import { AccountListModal } from './components/AccountListModal/AccountListModal';
 import Loader from './components/Loader/Loader';
 import GradientButton from './components/GradientButton/GradientButton';
 import Navbar from './components/Navbar/Navbar';
-import Header from './components/Header/Header';
 import TextButton from './components/TextButton/TextButton';
 
 interface Status {
@@ -239,10 +246,9 @@ const App = (): JSX.Element => {
 
   return (
     <div>
-      <Navbar showDisplayModal={setDisplayModal} shouldDisplayBtn={transferBalanceFrom!=undefined && selectedReefSigner?.isEvmClaimed==false}/>
+      <Navbar/>
       { selectedReefSigner ? (
-        <div>
-          <Header />
+        <div className='content'>
           <div className='display_account_info'>
           <Account account={selectedReefSigner} isDestAccount={selectedReefSigner.isEvmClaimed==false} />
           </div>

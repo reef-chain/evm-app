@@ -8,10 +8,37 @@
 .logo{
     padding-left: 50px;
     max-width: 90px;
+    position: absolute;
 }
 
 .navbar__select-account{
     position: absolute;
     right: 30px;
     top: -15px;
+}
+
+.nav-title{
+    text-align: center;
+    font-size: 32px;
+    font-weight: 500;
+    width: 100%;
+}
+
+@media (max-width:770px)  { /* smartphones, iPhone, portrait 480x320 phones */
+
+    .logo{
+        position: relative;
+        padding: 10px;
+    }
+
+    .navbar {
+        display: block;
+        text-align: center;
+    }
+
+
+    .nav-title {
+        font-size: 18px;
+        font-weight: 400;
+    }
 }
