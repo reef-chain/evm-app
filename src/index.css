@@ -8,6 +8,7 @@
 .display_account_info{
     display: flex;
     justify-content: center;
+    align-items: center;
 }
 
 .center-page{
