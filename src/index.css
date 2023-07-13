@@ -39,3 +39,63 @@
 .content {
     padding: 2em;
 }
+
+.no-ext-banner{
+    background:linear-gradient(to top, #a93185, #5d3bad);
+    padding:20px 30px 20px 30px;
+    margin: 0px;
+    font-size: 18px;
+    font-weight: 400;
+    color: white;
+    border-radius: 10px;
+}
+
+.extension-download{
+    font-family: 'Poppins', sans-serif;
+    text-decoration: none;
+    color: white;
+    padding: 20px;
+    border-radius: 50px;
+    background:linear-gradient(to right, #a93185, #5d3bad);
+    margin-right: 20px;
+}
+
+.extension-download:hover{
+    font-family: 'Poppins', sans-serif;
+    background:linear-gradient(to left, #a93185, #5d3bad);
+}
+
+.extension-download-buttons{
+    font-family: 'Poppins', sans-serif;
+    margin-top: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.no-ext-tagline{
+    font-family: 'Poppins', sans-serif;
+    padding:10px 30px 10px 30px;
+}
+
+.no-ext-headline{
+    font-family: 'Poppins', sans-serif;
+    font-size: 35px;
+    font-weight: 500;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.no-ext-img{
+    max-width: 30vw;
+    padding: 20px;
+    margin-right: 20px;
+    border-radius: 30px;
+}
+
+.no-ext-imgs{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

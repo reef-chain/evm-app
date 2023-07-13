@@ -37,7 +37,6 @@ const App = (): JSX.Element => {
   const [transferBalanceFrom, setTransferBalanceFrom] = useState<ReefAccount | undefined>();
   const [status, setStatus] = useState<Status>({ inProgress: false });
   const selectedReefSignerRef = useRef(selectedReefSigner);
-  const [isReefExtInstalled,setIsReefExtInstalled]=useState<boolean>(true);
   let unsubBalance = () => {};
 
   useEffect(() => {
@@ -84,7 +83,6 @@ const App = (): JSX.Element => {
         reefExtension = await getReefExtension('Reef EVM connection');
       }
       if (!reefExtension) {
-        setIsReefExtInstalled(false)
         setStatus({ inProgress: false, message: 'Reef Extension not installed' });
         throw new Error('Install Reef Chain Wallet extension for Chrome or Firefox. See docs.reef.io');
       }
@@ -327,7 +325,31 @@ const App = (): JSX.Element => {
             </div>
           ) :(
             <div>
-              {status.message === 'Reef Extension not installed'?<>REEF Extension not installed</>:<>No account selected</>}
+              {status.message === 'Reef Extension not installed'?
+              <div> 
+              <div className='no-ext-banner'>
+              <div className="no-ext-headline">
+              REEF Chain Extension
+              </div>
+              <br />
+              App uses browser extension to get accounts and securely sign transactions.<br/>Please install the extension and refresh the page.
+              </div>
+              <div className='no-ext-imgs'>
+                <img src="/1.png" className='no-ext-img' alt="" />
+                <img src="/2.png" className='no-ext-img' alt="" />
+              </div>
+              <div className='no-ext-tagline'>
+              This browser extension manages accounts and allows signing of transactions. Besides that it enables easy overview and transfers of native REEF and other tokens. With swap you can access the Reefswap pools and exchange tokens.
+              </div>
+              <div className='extension-download-buttons' >
+              <a className='extension-download' href='https://addons.mozilla.org/en-US/firefox/addon/reef-js-extension/'>
+                Download for Firefox
+              </a>
+              <a className='extension-download' href='https://chrome.google.com/webstore/detail/reef-chain-wallet-extensi/mjgkpalnahacmhkikiommfiomhjipgjn' >
+                Download for Chrome
+              </a>
+              </div>
+              </div>:<>No account selected</>}
             </div>
           )}
         </div>
