@@ -251,7 +251,23 @@ const App = (): JSX.Element => {
       { selectedReefSigner ? (
         <div className='content'>
           <div className='display_account_info'>
+          <GradientButton title={'<'} func={()=>{
+            let i=0;
+            for(i=0;i<accounts.length;i++){
+              if(accounts[i].address==selectedReefSigner.address)break;
+            }
+            if(i==0) i=accounts.length;
+            setSelectedReefSigner(accounts[i-1])
+          }}/>
           <Account account={selectedReefSigner} isDestAccount={selectedReefSigner.isEvmClaimed==false} />
+          <GradientButton title={'>'} func={()=>{
+            let i=0;
+            for(i=0;i<accounts.length;i++){
+              if(accounts[i].address==selectedReefSigner.address)break;
+            }
+            if(i==accounts.length-1) i=-1;
+            setSelectedReefSigner(accounts[i+1])
+          }}/>
           </div>
           { selectedReefSigner.isEvmClaimed ? (
             <div>
@@ -260,6 +276,7 @@ const App = (): JSX.Element => {
                 Successfully connected to Ethereum VM address&nbsp;
                 <b>{toAddressShortDisplay(selectedReefSigner.evmAddress)}</b>
                 <br />
+                
               </p>
             </div>
           ) : (
