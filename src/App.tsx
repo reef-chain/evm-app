@@ -37,6 +37,7 @@ const App = (): JSX.Element => {
   const [transferBalanceFrom, setTransferBalanceFrom] = useState<ReefAccount | undefined>();
   const [status, setStatus] = useState<Status>({ inProgress: false });
   const selectedReefSignerRef = useRef(selectedReefSigner);
+  const [isReefExtInstalled,setIsReefExtInstalled]=useState<boolean>(true);
   let unsubBalance = () => {};
 
   useEffect(() => {
@@ -83,6 +84,8 @@ const App = (): JSX.Element => {
         reefExtension = await getReefExtension('Reef EVM connection');
       }
       if (!reefExtension) {
+        setIsReefExtInstalled(false)
+        setStatus({ inProgress: false, message: 'Reef Extension not installed' });
         throw new Error('Install Reef Chain Wallet extension for Chrome or Firefox. See docs.reef.io');
       }
 
@@ -93,7 +96,9 @@ const App = (): JSX.Element => {
       ));
       setAccounts(_reefAccounts);
       setStatus({ inProgress: false });
-
+      if(_reefAccounts.length == 0){
+        console.log('no account')
+      }
       reefExtension.accounts.subscribe(async (accounts: InjectedAccount[]) => {
         console.log("accounts cb =", accounts);
         const _accounts = await Promise.all(accounts.map(async (account: InjectedAccount) =>
@@ -321,7 +326,9 @@ const App = (): JSX.Element => {
               <Loader text={ status.message }/>
             </div>
           ) :(
-            <p>No account selected.</p>
+            <div>
+              {status.message === 'Reef Extension not installed'?<>REEF Extension not installed</>:<>No account selected</>}
+            </div>
           )}
         </div>
       )}
