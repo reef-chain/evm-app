@@ -18,10 +18,15 @@ export interface ReefAccount {
 }
 
 export async function getReefExtension(appName: string) {
-    const extensionsArr = await web3Enable(appName);
-    const extension = extensionsArr.find((e: any) => e.name === REEF_EXTENSION_IDENT);
-    // @ts-ignore
-    return extension as ReefInjected | undefined;
+  const extensionsArr = await web3Enable(appName);
+  const extension = extensionsArr.find(e=>e.name===REEF_EXTENSION_IDENT);
+  // const extension = await web3FromSource(REEF_EXTENSION_IDENT);
+  if (!extension) {
+      throw new Error('Install Reef Chain Wallet extension for Chrome or Firefox. See docs.reef.io');
+  }
+  console.log("Extension=", extension);
+  //@ts-ignore
+  return extension as ReefInjected;
 }
 
 const getReefCoinBalance = async (
