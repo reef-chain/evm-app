@@ -41,8 +41,10 @@ const App = (): JSX.Element => {
   let unsubBalance = () => {};
 
   useEffect(() => {
-    getAccounts();
-  }, []);
+    if (accounts.length === 0) {
+      getAccounts();
+    }
+  }, [accounts]);
 
   // Update selectedReefSigner
   useEffect(() => {
