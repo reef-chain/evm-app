@@ -77,11 +77,12 @@ const App = (): JSX.Element => {
     setStatus({ inProgress: true, message: 'Loading accounts...' });
     try {
       let reefExtension = await getReefExtension('Reef EVM connection');
-      if (!reefExtension) {
+      
+      //if (!reefExtension) {
         // If first attempt failed, wait .5 seconds and try again
-        await new Promise( resolve => setTimeout(resolve, 500));
-        reefExtension = await getReefExtension('Reef EVM connection');
-      }
+      //  await new Promise( resolve => setTimeout(resolve, 500));
+      //  reefExtension = await getReefExtension('Reef EVM connection');
+      //}
       if (!reefExtension) {
         setStatus({ inProgress: false, message: 'Reef Extension not installed' });
         throw new Error('Install Reef Chain Wallet extension for Chrome or Firefox. See docs.reef.io');
