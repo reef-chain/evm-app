@@ -22,6 +22,7 @@ import Loader from './components/Loader/Loader';
 import GradientButton from './components/GradientButton/GradientButton';
 import Navbar from './components/Navbar/Navbar';
 import TextButton from './components/TextButton/TextButton';
+import { AccountListModal } from './components/AccountListModal/AccountListModal';
 
 interface Status {
   inProgress: boolean;
@@ -254,7 +255,23 @@ const App = (): JSX.Element => {
       { selectedReefSigner ? (
         <div className='content'>
           <div className='display_account_info'>
+          <GradientButton title={'<'} func={()=>{
+            let i=0;
+            for(i=0;i<accounts.length;i++){
+              if(accounts[i].address==selectedReefSigner.address)break;
+            }
+            if(i==0) i=accounts.length;
+            setSelectedReefSigner(accounts[i-1])
+          }}/>
           <Account account={selectedReefSigner} isDestAccount={selectedReefSigner.isEvmClaimed==false} />
+          <GradientButton title={'>'} func={()=>{
+            let i=0;
+            for(i=0;i<accounts.length;i++){
+              if(accounts[i].address==selectedReefSigner.address)break;
+            }
+            if(i==accounts.length-1) i=-1;
+            setSelectedReefSigner(accounts[i+1])
+          }}/>
           </div>
           { selectedReefSigner.isEvmClaimed ? (
             <div>
@@ -263,6 +280,7 @@ const App = (): JSX.Element => {
                 Successfully connected to Ethereum VM address&nbsp;
                 <b>{toAddressShortDisplay(selectedReefSigner.evmAddress)}</b>
                 <br />
+                
               </p>
             </div>
           ) : (
@@ -294,7 +312,7 @@ const App = (): JSX.Element => {
                             </div>
 
 
-                      {/*<AccountListModal
+                      <AccountListModal
                       selectedAccount = {transferBalanceFrom.address}
                         accounts={accountsWithEnoughBalance}
                         id="selectMyAddress"
@@ -305,7 +323,7 @@ const App = (): JSX.Element => {
                         title="Select account"
                         displayModal={displayModal}
                         handleClose={()=>setDisplayModal(false)}
-                      />*/}
+                      />
                       <GradientButton title={"Transfer"} func={transfer( transferBalanceFrom, selectedReefSigner )}/>
                     </div>
                     : <p>Not enough REEF on Reef chain account for EVM address transaction fee.</p>
