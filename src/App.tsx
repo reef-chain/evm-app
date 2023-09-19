@@ -77,6 +77,17 @@ const App = (): JSX.Element => {
     setStatus({ inProgress: true, message: 'Loading accounts...' });
     try {
       let reefExtension = await getReefExtension('Reef EVM connection');
+      
+      //if (!reefExtension) {
+        // If first attempt failed, wait .5 seconds and try again
+      //  await new Promise( resolve => setTimeout(resolve, 500));
+      //  reefExtension = await getReefExtension('Reef EVM connection');
+      //}
+      if (!reefExtension) {
+        setStatus({ inProgress: false, message: 'Reef Extension not installed' });
+        throw new Error('Install Reef Chain Wallet extension for Chrome or Firefox. See docs.reef.io');
+      }
+
       const provider = await reefExtension.reefProvider.getNetworkProvider();
       const accounts = await reefExtension.accounts.get();
         const _reefAccounts = await Promise.all(accounts.map(async (account: InjectedAccount) =>
@@ -84,7 +95,9 @@ const App = (): JSX.Element => {
       ));
       setAccounts(_reefAccounts);
       setStatus({ inProgress: false });
-
+      if(_reefAccounts.length == 0){
+        console.log('no account')
+      }
       reefExtension.accounts.subscribe(async (accounts: InjectedAccount[]) => {
         console.log("accounts cb =", accounts);
         const _accounts = await Promise.all(accounts.map(async (account: InjectedAccount) =>
@@ -312,7 +325,49 @@ const App = (): JSX.Element => {
               <Loader text={ status.message }/>
             </div>
           ) :(
-            <p>No account selected.</p>
+            <div>
+              {status.message === 'Reef Extension not installed'?
+              <div> 
+              <div className='no-ext-banner'>
+              <div className="no-ext-headline">
+              REEF Chain Extension
+              </div>
+              <br />
+              App uses browser extension to get accounts and securely sign transactions.<br/>Please install the extension and refresh the page.
+              </div>
+              <div className='no-ext-imgs'>
+                <img src="/1.png" className='no-ext-img' alt="" />
+                <img src="/2.png" className='no-ext-img' alt="" />
+              </div>
+              <div className='no-ext-tagline'>
+              This browser extension manages accounts and allows signing of transactions. Besides that it enables easy overview and transfers of native REEF and other tokens. With swap you can access the Reefswap pools and exchange tokens.
+              </div>
+              <div className='extension-download-buttons' >
+              <a className='extension-download' href='https://addons.mozilla.org/en-US/firefox/addon/reef-js-extension/'>
+                Download for Firefox
+              </a>
+              <a className='extension-download' href='https://chrome.google.com/webstore/detail/reef-chain-wallet-extensi/mjgkpalnahacmhkikiommfiomhjipgjn' >
+                Download for Chrome
+              </a>
+              </div>
+              </div>:<div> 
+              <div className='no-ext-banner'>
+              <div className="no-ext-headline">
+              Create an Account
+              </div>
+              <br />
+              Use Reef Chain Extension to create your account and refresh the page.
+              </div>
+              <div className='no-ext-imgs'>
+                <img src="/4.png" className='no-ext-img' alt="" />
+                <img src="/5.png" className='no-ext-img' alt="" />
+              </div>
+              <div className='no-ext-imgs'>
+              <img src="/6.png" className='no-ext-img' alt="" />
+                <img src="/7.png" className='no-ext-img' alt="" />
+              </div>
+              </div>}
+            </div>
           )}
         </div>
       )}
