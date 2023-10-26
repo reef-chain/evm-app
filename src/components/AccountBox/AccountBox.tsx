@@ -35,7 +35,7 @@ const Account = ({ account, onClick ,isAccountSelected,isDestAccount,showChangeA
     <div>
       {isAccountSelected == false? (
         <div className='accountBox__end'>
-          <GradientButton title={"Select"} />
+          <GradientButton title={"Select"} func={onClick} />
         </div>
       ):
       <div className='accountBox__end'>

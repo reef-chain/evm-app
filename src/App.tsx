@@ -259,7 +259,7 @@ const App = (): JSX.Element => {
       { selectedReefSigner ? (
         <div className='content'>
           
-          <AccountSelector isOpen={isOpen} onClose={()=>setIsOpen(false)} accounts={accounts}/>
+          <AccountSelector isOpen={isOpen} onClose={()=>setIsOpen(false)} accounts={accounts} onSelect={setSelectedReefSigner}/>
           <div className='display_account_info'>
          
           <Account account={selectedReefSigner} isDestAccount={selectedReefSigner.isEvmClaimed==false}/>

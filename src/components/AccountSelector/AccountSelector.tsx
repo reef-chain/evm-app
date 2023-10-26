@@ -8,8 +8,8 @@ export interface Props {
   isOpen: boolean,
   accounts?: ReefAccount[],
   selectedAccount?: ReefAccount | null | undefined,
-  onClose?: (...args: any[]) => any,
-  onSelect?: (...args: any[]) => any,
+  onClose: (...args: any[]) => any,
+  onSelect: (...args: any[]) => any,
 }
 
 const AccountSelector = ({
@@ -55,7 +55,9 @@ const AccountSelector = ({
           <div className="uik-account-selector__content">
           <div style={{display:'flex',flexDirection:'column',minWidth:'85vw',overflowY:'auto',justifyContent:'center',alignItems:'center'}}>
           {accounts?.map(val=>
-            <Account isAccountSelected ={false} account={val}/>
+            <Account isAccountSelected ={false} account={val} onClick={()=>{onSelect(val);
+            onClose()
+            }} />
           )}
           </div>
           </div>
