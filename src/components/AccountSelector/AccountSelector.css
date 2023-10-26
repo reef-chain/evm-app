@@ -40,3 +40,18 @@
     outline: none;
   }
   
+  .uik-account-selector__content {
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+  
+
+  .uik-account-selector__content::-webkit-scrollbar {
+    width: 0;
+  }
+  
+  .account-selector--title{
+    padding: 12px;
+    font-size: 22px;
+    font-weight: 400;
+  }
