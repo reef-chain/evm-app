@@ -23,6 +23,7 @@ import GradientButton from './components/GradientButton/GradientButton';
 import Navbar from './components/Navbar/Navbar';
 import TextButton from './components/TextButton/TextButton';
 import { AccountListModal } from './components/AccountListModal/AccountListModal';
+import AccountSelector from './components/AccountSelector/AccountSelector';
 
 interface Status {
   inProgress: boolean;
@@ -32,6 +33,7 @@ interface Status {
 const App = (): JSX.Element => {
   const [accounts, setAccounts] = useState<ReefAccount[]>([]);
   const [displayModal, setDisplayModal] = useState<boolean>(false);
+  const [isOpen,setIsOpen] = useState<boolean>(false);
   const [accountsWithEnoughBalance, setAccountsWithEnoughBalance] = useState<ReefAccount[]>([]);
   const [selectedSigner, setSelectedSigner] = useState<Signer>();
   const [selectedReefSigner, setSelectedReefSigner] = useState<ReefAccount>();
@@ -253,27 +255,14 @@ const App = (): JSX.Element => {
 
   return (
     <div>
-      <Navbar/>
+      <Navbar isOpen={isOpen} setIsOpen={()=>setIsOpen(true)}/>
       { selectedReefSigner ? (
         <div className='content'>
+          
+          <AccountSelector isOpen={isOpen} onClose={()=>setIsOpen(false)}/>
           <div className='display_account_info'>
-          <GradientButton title={'<'} func={()=>{
-            let i=0;
-            for(i=0;i<accounts.length;i++){
-              if(accounts[i].address==selectedReefSigner.address)break;
-            }
-            if(i==0) i=accounts.length;
-            setSelectedReefSigner(accounts[i-1])
-          }}/>
-          <Account account={selectedReefSigner} isDestAccount={selectedReefSigner.isEvmClaimed==false} />
-          <GradientButton title={'>'} func={()=>{
-            let i=0;
-            for(i=0;i<accounts.length;i++){
-              if(accounts[i].address==selectedReefSigner.address)break;
-            }
-            if(i==accounts.length-1) i=-1;
-            setSelectedReefSigner(accounts[i+1])
-          }}/>
+         
+          <Account account={selectedReefSigner} isDestAccount={selectedReefSigner.isEvmClaimed==false}/>
           </div>
           { selectedReefSigner.isEvmClaimed ? (
             <div>
