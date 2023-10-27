@@ -33,6 +33,7 @@ interface Status {
 const App = (): JSX.Element => {
   const [accounts, setAccounts] = useState<ReefAccount[]>([]);
   const [displayModal, setDisplayModal] = useState<boolean>(false);
+  const [isReefInjected, setIsReefInjected] = useState<boolean>(false);
   const [isOpen,setIsOpen] = useState<boolean>(false);
   const [accountsWithEnoughBalance, setAccountsWithEnoughBalance] = useState<ReefAccount[]>([]);
   const [selectedSigner, setSelectedSigner] = useState<Signer>();
@@ -42,11 +43,15 @@ const App = (): JSX.Element => {
   const selectedReefSignerRef = useRef(selectedReefSigner);
   let unsubBalance = () => {};
 
+  document.addEventListener('reef-injected', async () => {
+    if (!isReefInjected)setIsReefInjected(true);
+  });
+
   useEffect(() => {
     if (accounts.length === 0) {
       getAccounts();
     }
-  }, [accounts]);
+  }, [accounts,isReefInjected]);
 
   // Update selectedReefSigner
   useEffect(() => {
