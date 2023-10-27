@@ -26,6 +26,7 @@ import { AccountListModal } from './components/AccountListModal/AccountListModal
 import AccountSelector from './components/AccountSelector/AccountSelector';
 import CreateAccount from './components/CreateAccount/CreateAccount';
 import ExtensionNotInstalled from './components/ExtensionNotInstalled/ExtensionNotInstalled';
+import EvmClaimed from './components/EvmClaimed/EvmClaimed';
 
 interface Status {
   inProgress: boolean;
@@ -351,9 +352,7 @@ const App = (): JSX.Element => {
           ) :(
             <div>
               {status.message === 'Reef Extension not installed'?
-              <ExtensionNotInstalled/>: status.message == "EVM claimed for all accounts"?<div className='center-page'>
-              EVM has been claimed for all your accounts
-              </div>:<CreateAccount/>}
+              <ExtensionNotInstalled/>: status.message == "EVM claimed for all accounts"?<EvmClaimed/>:<CreateAccount/>}
             </div>
           )}
         </div>
