@@ -25,8 +25,7 @@ const Account = ({ account, onClick ,isAccountSelected,isDestAccount,showChangeA
         {isDestAccount == true?
         <div></div>:
       <div className='accountBox__details_shortaddress'>
-        <span>EVM Address : </span>{ toAddressShortDisplay(account.evmAddress) }</div>
-        
+        <span>EVM Address : </span>{ toAddressShortDisplay(account.evmAddress) }</div>  
       }
     </div>
     {isDestAccount==true?

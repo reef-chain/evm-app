@@ -3,6 +3,7 @@ import { CSSTransition } from 'react-transition-group';
 import './AccountSelector.css'; // Create a CSS file for styling
 import { ReefAccount } from "../../util";
 import Account from "../AccountBox/AccountBox";
+import DisabledAccountBox from "../DisabledAccountBox/DisabledAccountBox";
 
 export interface Props {
   isOpen: boolean,
@@ -50,12 +51,13 @@ const AccountSelector = ({
           >
             Close
           </button>
-          <div>
+          <div style={{position:'absolute',top:'80px'}}>
           <div className="account-selector--title">Accounts</div>
           <div className="uik-account-selector__content">
           <div style={{display:'flex',flexDirection:'column',minWidth:'85vw',overflowY:'auto',justifyContent:'center',alignItems:'center'}}>
           {accounts?.map(val=>
-            <Account isAccountSelected ={false} account={val} onClick={()=>{onSelect(val);
+          
+           val.isEvmClaimed?<DisabledAccountBox account={val}/>: <Account isAccountSelected ={false} account={val} onClick={()=>{onSelect(val);
             onClose()
             }} />
           )}
