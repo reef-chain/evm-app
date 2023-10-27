@@ -49,9 +49,9 @@ const AccountSelector = ({
             className="uik-account-selector__close-button"
             onClick={onClose}
           >
-            Close
+            <img src="/close.png" alt="" style={{maxWidth:65}} />
           </button>
-          <div style={{position:'absolute',top:'80px'}}>
+          <div style={{position:'absolute',top:'50px'}}>
           <div className="account-selector--title">Accounts</div>
           <div className="uik-account-selector__content">
           <div style={{display:'flex',flexDirection:'column',minWidth:'85vw',overflowY:'auto',justifyContent:'center',alignItems:'center'}}>
