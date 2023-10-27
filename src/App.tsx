@@ -97,6 +97,8 @@ const App = (): JSX.Element => {
         setStatus({ inProgress: false, message: 'Reef Extension not installed' });
         throw new Error('Install Reef Chain Wallet extension for Chrome or Firefox. See docs.reef.io');
       }
+      let injectedSigner;
+      if(reefExtension)injectedSigner=reefExtension.signer;
 
       const provider = await reefExtension.reefProvider.getNetworkProvider();
       const accounts = await reefExtension.accounts.get();
@@ -109,18 +111,24 @@ const App = (): JSX.Element => {
         console.log('no account')
       }
       reefExtension.accounts.subscribe(async (accounts: InjectedAccount[]) => {
-        console.log("accounts cb =", accounts);
         const _accounts = await Promise.all(accounts.map(async (account: InjectedAccount) =>
           accountToReefAccount(account, provider)
         ));
         setAccounts(_accounts);
       });
 
-      reefExtension.reefSigner.subscribeSelectedSigner(async (sig:ReefSignerResponse) => {
-        console.log("signer cb =", sig);
-        setSelectedSigner(sig.data);
-        subscribeBalance(sig.data);
-      }, ReefVM.NATIVE);
+      let account = _reefAccounts.find((acc)=>!acc.isEvmClaimed)
+      if(account){
+        const signer = new Signer(provider,account.address,injectedSigner!)
+        setSelectedSigner(signer);
+        subscribeBalance(signer);
+      }else{
+        if(_reefAccounts.length){
+          setStatus({inProgress:false,message:"EVM claimed for all accounts"})
+        setSelectedSigner(undefined);
+        subscribeBalance(undefined);
+      } 
+      }
 
     } catch (err: any) {
       console.error(err);
