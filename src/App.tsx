@@ -372,6 +372,8 @@ const App = (): JSX.Element => {
                 Download for Chrome
               </a>
               </div>
+              </div>: status.message == "EVM claimed for all accounts"?<div className='center-page'>
+              EVM has been claimed for all your accounts
               </div>:<div> 
               <div className='no-ext-banner'>
               <div className="no-ext-headline">
