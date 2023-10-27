@@ -32,6 +32,8 @@
     font-size: 16px;
     margin: -6px;
     letter-spacing: 0.2px;
+    margin-left: 4px;
+    margin-right: 4px;
 }
 .text-btn:hover {
     cursor:pointer

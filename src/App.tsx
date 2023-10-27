@@ -51,11 +51,15 @@ const App = (): JSX.Element => {
   // Update selectedReefSigner
   useEffect(() => {
     if (selectedSigner) {
-      const account = accounts.find(
+      let account = accounts.find(
         (account: ReefAccount) => account.address === selectedSigner._substrateAddress
       );
+      
       if (account) {
-        account.signer = selectedSigner;
+        if(account?.isEvmClaimed){
+          account = accounts.find((account:ReefAccount)=>!account.isEvmClaimed)
+        }
+        account!.signer = selectedSigner;
         setSelectedReefSigner(account);
         selectedReefSignerRef.current = account;
         return;
