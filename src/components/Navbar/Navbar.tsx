@@ -1,7 +1,5 @@
 import GradientButton from '../GradientButton/GradientButton';
 import './styles.css'
-import React from "react";
-
 function Navbar(props:{isOpen:boolean,setIsOpen:(isOpen:boolean)=>void}) {
   return (
     <div className='navbar'>

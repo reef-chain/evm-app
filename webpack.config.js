@@ -55,6 +55,7 @@ module.exports = {
         test: /\.js$/,
         enforce: "pre",
         use: ["source-map-loader"],
+        exclude:[/node_modules\/@reef-defi\/evm-provider/]
       },
       {
         test: /\.(png|svg|jpg|jpeg|gif|ico)$/,
