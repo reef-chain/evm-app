@@ -25,8 +25,7 @@ const Account = ({ account, onClick ,isAccountSelected,isDestAccount,showChangeA
         {isDestAccount == true?
         <div></div>:
       <div className='accountBox__details_shortaddress'>
-        <span>EVM Address : </span>{ toAddressShortDisplay(account.evmAddress) }</div>
-        
+        <span>EVM Address : </span>{ toAddressShortDisplay(account.evmAddress) }</div>  
       }
     </div>
     {isDestAccount==true?
@@ -35,7 +34,7 @@ const Account = ({ account, onClick ,isAccountSelected,isDestAccount,showChangeA
     <div>
       {isAccountSelected == false? (
         <div className='accountBox__end'>
-          <GradientButton title={"Select"} />
+          <GradientButton title={"Select"} func={onClick} />
         </div>
       ):
       <div className='accountBox__end'>

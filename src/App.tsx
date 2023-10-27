@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
 import {decodeAddress} from '@polkadot/util-crypto';
 import {web3FromAddress} from '@reef-defi/extension-dapp';
-import {InjectedAccount, ReefSignerResponse, ReefVM} from "@reef-defi/extension-inject/types";
+import {InjectedAccount} from "@reef-defi/extension-inject/types";
 import {Signer} from '@reef-defi/evm-provider';
 import {ethers} from 'ethers';
 import {Buffer} from 'buffer';
@@ -23,6 +23,10 @@ import GradientButton from './components/GradientButton/GradientButton';
 import Navbar from './components/Navbar/Navbar';
 import TextButton from './components/TextButton/TextButton';
 import { AccountListModal } from './components/AccountListModal/AccountListModal';
+import AccountSelector from './components/AccountSelector/AccountSelector';
+import CreateAccount from './components/CreateAccount/CreateAccount';
+import ExtensionNotInstalled from './components/ExtensionNotInstalled/ExtensionNotInstalled';
+import EvmClaimed from './components/EvmClaimed/EvmClaimed';
 
 interface Status {
   inProgress: boolean;
@@ -32,6 +36,8 @@ interface Status {
 const App = (): JSX.Element => {
   const [accounts, setAccounts] = useState<ReefAccount[]>([]);
   const [displayModal, setDisplayModal] = useState<boolean>(false);
+  const [isReefInjected, setIsReefInjected] = useState<boolean>(false);
+  const [isOpen,setIsOpen] = useState<boolean>(false);
   const [accountsWithEnoughBalance, setAccountsWithEnoughBalance] = useState<ReefAccount[]>([]);
   const [selectedSigner, setSelectedSigner] = useState<Signer>();
   const [selectedReefSigner, setSelectedReefSigner] = useState<ReefAccount>();
@@ -40,17 +46,21 @@ const App = (): JSX.Element => {
   const selectedReefSignerRef = useRef(selectedReefSigner);
   let unsubBalance = () => {};
 
+  document.addEventListener('reef-injected', async () => {
+    if (!isReefInjected)setIsReefInjected(true);
+  });
+
   useEffect(() => {
     if (accounts.length === 0) {
       getAccounts();
     }
-  }, [accounts]);
+  }, [accounts,isReefInjected]);
 
   // Update selectedReefSigner
   useEffect(() => {
     if (selectedSigner) {
-      const account = accounts.find(
-        (account: ReefAccount) => account.address === selectedSigner._substrateAddress
+      let account = accounts.find(
+        (account: ReefAccount) => account.address==selectedSigner._substrateAddress
       );
       if (account) {
         account.signer = selectedSigner;
@@ -90,6 +100,8 @@ const App = (): JSX.Element => {
         setStatus({ inProgress: false, message: 'Reef Extension not installed' });
         throw new Error('Install Reef Chain Wallet extension for Chrome or Firefox. See docs.reef.io');
       }
+      let injectedSigner;
+      if(reefExtension)injectedSigner=reefExtension.signer;
 
       const provider = await reefExtension.reefProvider.getNetworkProvider();
       const accounts = await reefExtension.accounts.get();
@@ -102,18 +114,24 @@ const App = (): JSX.Element => {
         console.log('no account')
       }
       reefExtension.accounts.subscribe(async (accounts: InjectedAccount[]) => {
-        console.log("accounts cb =", accounts);
         const _accounts = await Promise.all(accounts.map(async (account: InjectedAccount) =>
           accountToReefAccount(account, provider)
         ));
         setAccounts(_accounts);
       });
 
-      reefExtension.reefSigner.subscribeSelectedSigner(async (sig:ReefSignerResponse) => {
-        console.log("signer cb =", sig);
-        setSelectedSigner(sig.data);
-        subscribeBalance(sig.data);
-      }, ReefVM.NATIVE);
+      let account = _reefAccounts.find((acc)=>!acc.isEvmClaimed)
+      if(account){
+        const signer = new Signer(provider,account.address,injectedSigner!)
+        setSelectedSigner(signer);
+        subscribeBalance(signer);
+      }else{
+        if(_reefAccounts.length){
+          setStatus({inProgress:false,message:"EVM claimed for all accounts"})
+        setSelectedSigner(undefined);
+        subscribeBalance(undefined);
+      } 
+      }
 
     } catch (err: any) {
       console.error(err);
@@ -253,27 +271,14 @@ const App = (): JSX.Element => {
 
   return (
     <div>
-      <Navbar/>
+      <Navbar isOpen={isOpen} setIsOpen={()=>setIsOpen(true)}/>
       { selectedReefSigner ? (
         <div className='content'>
+          
+          <AccountSelector isOpen={isOpen} onClose={()=>setIsOpen(false)} accounts={accounts} onSelect={setSelectedReefSigner}/>
           <div className='display_account_info'>
-          <GradientButton title={'<'} func={()=>{
-            let i=0;
-            for(i=0;i<accounts.length;i++){
-              if(accounts[i].address==selectedReefSigner.address)break;
-            }
-            if(i==0) i=accounts.length;
-            setSelectedReefSigner(accounts[i-1])
-          }}/>
-          <Account account={selectedReefSigner} isDestAccount={selectedReefSigner.isEvmClaimed==false} />
-          <GradientButton title={'>'} func={()=>{
-            let i=0;
-            for(i=0;i<accounts.length;i++){
-              if(accounts[i].address==selectedReefSigner.address)break;
-            }
-            if(i==accounts.length-1) i=-1;
-            setSelectedReefSigner(accounts[i+1])
-          }}/>
+         
+          <Account account={selectedReefSigner} isDestAccount={selectedReefSigner.isEvmClaimed==false}/>
           </div>
           { selectedReefSigner.isEvmClaimed ? (
             <div>
@@ -347,46 +352,7 @@ const App = (): JSX.Element => {
           ) :(
             <div>
               {status.message === 'Reef Extension not installed'?
-              <div> 
-              <div className='no-ext-banner'>
-              <div className="no-ext-headline">
-              REEF Chain Extension
-              </div>
-              <br />
-              App uses browser extension to get accounts and securely sign transactions.<br/>Please install the extension and refresh the page.
-              </div>
-              <div className='no-ext-imgs'>
-                <img src="/1.png" className='no-ext-img' alt="" />
-                <img src="/2.png" className='no-ext-img' alt="" />
-              </div>
-              <div className='no-ext-tagline'>
-              This browser extension manages accounts and allows signing of transactions. Besides that it enables easy overview and transfers of native REEF and other tokens. With swap you can access the Reefswap pools and exchange tokens.
-              </div>
-              <div className='extension-download-buttons' >
-              <a className='extension-download' href='https://addons.mozilla.org/en-US/firefox/addon/reef-js-extension/'>
-                Download for Firefox
-              </a>
-              <a className='extension-download' href='https://chrome.google.com/webstore/detail/reef-chain-wallet-extensi/mjgkpalnahacmhkikiommfiomhjipgjn' >
-                Download for Chrome
-              </a>
-              </div>
-              </div>:<div> 
-              <div className='no-ext-banner'>
-              <div className="no-ext-headline">
-              Create an Account
-              </div>
-              <br />
-              Use Reef Chain Extension to create your account and refresh the page.
-              </div>
-              <div className='no-ext-imgs'>
-                <img src="/4.png" className='no-ext-img' alt="" />
-                <img src="/5.png" className='no-ext-img' alt="" />
-              </div>
-              <div className='no-ext-imgs'>
-              <img src="/6.png" className='no-ext-img' alt="" />
-                <img src="/7.png" className='no-ext-img' alt="" />
-              </div>
-              </div>}
+              <ExtensionNotInstalled/>: status.message == "EVM claimed for all accounts"?<EvmClaimed/>:<CreateAccount/>}
             </div>
           )}
         </div>

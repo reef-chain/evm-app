@@ -49,3 +49,34 @@
     margin: 20px;
    letter-spacing: 0.8px;
   }
+
+
+.gradient-button-mini{
+  display: flex;
+flex-flow: row nowrap;
+justify-content: center;
+align-items: center;
+background-color: #e7def0;
+border: none;
+white-space: nowrap;
+border-radius: 30px;
+font-size: 14px;
+line-height: 1.1;
+font-weight: 500;
+padding: 12px 16px;
+user-select: none;
+font-weight: 500;
+color: white;
+background: linear-gradient(135deg, #ae27a5, #742cb2);
+box-shadow: 0 5px 20px -10px #742cb2;
+transition: all 0.125s;
+letter-spacing: 0.5px;
+margin: 10px;
+}
+
+.gradient-button-mini:hover {
+  transition: none;
+  cursor: pointer;
+  background-color: #e1d5ec;
+}
+
