@@ -57,7 +57,7 @@ const AccountSelector = ({
           <div style={{display:'flex',flexDirection:'column',minWidth:'85vw',overflowY:'auto',justifyContent:'center',alignItems:'center'}}>
           {accounts?.map(val=>
           
-           val.isEvmClaimed?<DisabledAccountBox account={val}/>: <Account isAccountSelected ={false} account={val} onClick={()=>{onSelect(val);
+           val.isEvmClaimed?<DisabledAccountBox key={val.address} account={val}/>: <Account isAccountSelected ={false} account={val} key={val.address} onClick={()=>{onSelect(val);
             onClose()
             }} />
           )}
