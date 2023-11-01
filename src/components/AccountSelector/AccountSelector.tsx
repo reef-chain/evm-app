@@ -4,6 +4,7 @@ import './AccountSelector.css'; // Create a CSS file for styling
 import { ReefAccount } from "../../util";
 import Account from "../AccountBox/AccountBox";
 import DisabledAccountBox from "../DisabledAccountBox/DisabledAccountBox";
+import SwitchNetworkInfo from "../SwitchNetworkInfo";
 
 export interface Props {
   isOpen: boolean,
@@ -53,8 +54,9 @@ const AccountSelector = ({
           </button>
           <div style={{position:'absolute',top:'50px'}}>
           <div className="account-selector--title">Accounts</div>
+          <SwitchNetworkInfo/>
           <div className="uik-account-selector__content">
-          <div style={{display:'flex',flexDirection:'column',minWidth:'85vw',overflowY:'auto',justifyContent:'center',alignItems:'center'}}>
+          <div style={{display:'flex',flexDirection:'column',minWidth:'85vw',overflowY:'auto', minHeight:"180vh",justifyContent:'start',alignItems:'center'}}>
           {accounts?.map(val=>
           
            val.isEvmClaimed?<DisabledAccountBox key={val.address} account={val}/>: <Account isAccountSelected ={false} account={val} key={val.address} onClick={()=>{onSelect(val);
