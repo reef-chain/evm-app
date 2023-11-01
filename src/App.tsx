@@ -336,10 +336,12 @@ const App = (): JSX.Element => {
             {/* No claimed */}
               { !status.inProgress && ( <>
                 { hasBalanceForBinding(selectedReefSigner.balance) ? (
-                  <div className='center-page'>
+                  <div className='center-page' >
                   {/* Bind */}
+                  <div style={{display:'flex'}}>
                   <GradientButton title={"Bind Custom EVM"} func={() => bindEvmAddress(selectedReefSigner)}/>
                   <GradientButton title={"Bind default EVM"} func={() => bindDefaultEvmAddress(selectedReefSigner)}/>
+                  </div>
                   </div>
                 ) : (
                   <>
