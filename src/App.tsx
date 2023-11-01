@@ -43,6 +43,7 @@ const App = (): JSX.Element => {
   const [selectedReefSigner, setSelectedReefSigner] = useState<ReefAccount>();
   const [transferBalanceFrom, setTransferBalanceFrom] = useState<ReefAccount | undefined>();
   const [status, setStatus] = useState<Status>({ inProgress: false });
+  const [isMainnet,setIsMainnet] = useState<boolean>(true);
   const selectedReefSignerRef = useRef(selectedReefSigner);
   let unsubBalance = () => {};
 
@@ -104,6 +105,14 @@ const App = (): JSX.Element => {
       if(reefExtension)injectedSigner=reefExtension.signer;
 
       const provider = await reefExtension.reefProvider.getNetworkProvider();
+      reefExtension.reefProvider.subscribeSelectedNetworkProvider((pro)=>{
+        let _isMainnet = !pro.scanner['rpcProvider']['__private_2_endpoints'][0].includes('test');
+        if(isMainnet===_isMainnet){
+
+        }else{
+          setIsMainnet(_isMainnet)
+        }
+      })
       const accounts = await reefExtension.accounts.get();
         const _reefAccounts = await Promise.all(accounts.map(async (account: InjectedAccount) =>
         accountToReefAccount(account, provider)
@@ -271,7 +280,8 @@ const App = (): JSX.Element => {
 
   return (
     <div>
-      <Navbar isOpen={isOpen} setIsOpen={()=>setIsOpen(true)}/>
+      <Navbar isOpen={isOpen} setIsOpen={()=>setIsOpen(true)} isMainnet={isMainnet}/>
+      <br />
       { selectedReefSigner ? (
         <div className='content'>
           
