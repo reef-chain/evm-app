@@ -242,6 +242,47 @@ const App = (): JSX.Element => {
     }
   }
 
+   // Bind Default EVM address
+   const bindDefaultEvmAddress = async (reefAccount: ReefAccount): Promise<void> => {
+    setStatus({ inProgress: true, message: `Send transaction with Reef extension to claim default account.` });
+
+    try {
+      await reefAccount.signer!.provider.api.tx.evmAccounts.claimDefaultAccount()
+        .signAndSend(reefAccount.address,
+          (status: any) => {
+            console.log("status =", status)
+            const err = captureError(status.events);
+            if (err) {
+              console.log("connection error", err);
+              setStatus({ inProgress: false, message: 'Failed to connect EVM address.' });
+            }
+            if (status.dispatchError) {
+              console.log("connection dispatch error", status.dispatchError.toString());
+              setStatus({ inProgress: false, message: 'Failed to connect EVM address.' });
+            }
+            if (status.status.isInBlock) {
+              console.log("Included at block hash", status.status.asInBlock.toHex());
+              if (selectedReefSigner) {
+                queryEvmAddress(selectedReefSigner.address, selectedReefSigner.signer!.provider)
+                .then(({ evmAddress, isEvmClaimed }) => {
+                  setSelectedReefSigner({ ...selectedReefSigner, evmAddress, isEvmClaimed });
+                  setStatus({ inProgress: false });
+                }).catch((err) => {
+                  setStatus({ inProgress: false, message: 'Failed to connect EVM address.' });
+                }
+              )}
+            }
+            if (status.status.isFinalized) {
+              console.log("Finalized block hash", status.status.asFinalized.toHex());
+            }
+          },
+        );
+    } catch (err) {
+      console.log("error", err);
+      setStatus({ inProgress: false, message: 'Failed to connect EVM address.' });
+    }
+  }
+
   // Sign message with EVM wallet
   const signMessage = async (message: string): Promise<{evmAddress?: string, signature?: string, error?: string}> => {
     // @ts-ignore
@@ -295,9 +336,12 @@ const App = (): JSX.Element => {
             {/* No claimed */}
               { !status.inProgress && ( <>
                 { hasBalanceForBinding(selectedReefSigner.balance) ? (
-                  <div className='center-page'>
+                  <div className='center-page' >
                   {/* Bind */}
-                  <GradientButton title={"Bind"} func={() => bindEvmAddress(selectedReefSigner)}/>
+                  <div style={{display:'flex'}}>
+                  <GradientButton title={"Bind Custom EVM"} func={() => bindEvmAddress(selectedReefSigner)}/>
+                  <GradientButton title={"Bind default EVM"} func={() => bindDefaultEvmAddress(selectedReefSigner)}/>
+                  </div>
                   </div>
                 ) : (
                   <>
